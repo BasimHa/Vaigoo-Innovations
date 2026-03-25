@@ -1,5 +1,6 @@
 import { Globe, MessageCircle, Mail, MapPin, Phone, Clock, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export const Footer = () => {
   return (
@@ -9,9 +10,18 @@ export const Footer = () => {
           
           {/* Brand & About */}
           <div className="lg:col-span-2">
-            <div className="text-2xl font-bold tracking-tight text-slate-900 mb-6 cursor-pointer">
-              Vaigoo <span className="text-gradient-primary">Innovations</span>
-            </div>
+            <Link href="/" className="flex items-center gap-3 mb-6">
+              <Image 
+                src="/Images/logo/Gemini_Generated_Image_38mz5x38mz5x38mz.png" 
+                alt="Vaigoo Innovations Logo" 
+                width={44} 
+                height={44}
+                className="rounded-xl shadow-md"
+              />
+              <span className="text-2xl font-bold tracking-tight text-slate-900">
+                Vaigoo <span className="text-gradient-primary">Innovations</span>
+              </span>
+            </Link>
             <p className="text-slate-600 mb-8 max-w-md leading-relaxed">
               We are a next-generation digital solutions technology company. We specialize in building intelligent systems, AI-driven applications, and scalable platforms that empower modern businesses to reach their highest potential.
             </p>

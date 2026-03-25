@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 
 const navLinks = [
@@ -35,9 +36,18 @@ export const Navbar = () => {
             <motion.div 
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
-              className="text-2xl font-bold tracking-tight text-slate-900 cursor-pointer"
+              className="flex items-center gap-3 cursor-pointer"
             >
-              Vaigoo <span className="text-gradient-primary">Innovations</span>
+              <Image 
+                src="/Images/logo/Gemini_Generated_Image_38mz5x38mz5x38mz.png" 
+                alt="Vaigoo Innovations Logo" 
+                width={40} 
+                height={40}
+                className="rounded-lg shadow-sm"
+              />
+              <span className="text-2xl font-bold tracking-tight text-slate-900 hidden sm:block">
+                Vaigoo <span className="text-gradient-primary">Innovations</span>
+              </span>
             </motion.div>
           </Link>
 
