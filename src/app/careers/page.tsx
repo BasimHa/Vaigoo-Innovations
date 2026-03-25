@@ -7,16 +7,17 @@ import { fadeUp, staggerContainer } from '@/components/animations/variants';
 import { CustomSelect, Option } from '@/components/ui/CustomSelect';
 
 const departmentOptions: Option[] = [
-  { value: "Frontend Engineering", label: "Frontend Engineering", description: "React, Next.js, Framer Motion", icon: <Code size={20} /> },
+  { value: "Frontend engineering", label: "Frontend Engineering", description: "React, Next.js, Framer Motion", icon: <Code size={20} /> },
   { value: "Backend Engineering", label: "Backend Engineering", description: "Node.js, Python, Databases", icon: <Database size={20} /> },
-  { value: "AI / Machine Learning", label: "AI / Machine Learning", description: "LLMs, Data Pipelines, AI Agents", icon: <BrainCircuit size={20} /> },
-  { value: "UI/UX Design", label: "UI/UX Design", description: "Figma, User Research, Prototyping", icon: <PenTool size={20} /> },
-  { value: "Growth & Marketing", label: "Growth & Marketing", description: "SEO, Campaigns, Analytics", icon: <TrendingUp size={20} /> },
-  { value: "Other / General", label: "Other / General", description: "Sales, Operations, General", icon: <Presentation size={20} /> },
+  { value: "Ai/ML", label: "AI / Machine Learning", description: "LLMs, Data Pipelines, AI Agents", icon: <BrainCircuit size={20} /> },
+  { value: "UI/UX designing", label: "UI/UX Design", description: "Figma, User Research, Prototyping", icon: <PenTool size={20} /> },
+  { value: "Growth and Marketing", label: "Growth & Marketing", description: "SEO, Campaigns, Analytics", icon: <TrendingUp size={20} /> },
+  { value: "__other_option__", label: "Other / General", description: "Sales, Operations, General", icon: <Presentation size={20} /> },
 ];
 
 export default function CareersPage() {
   const [focusedArea, setFocusedArea] = useState<string>('');
+  const [otherRole, setOtherRole] = useState<string>('');
   const [fileName, setFileName] = useState<string | null>(null);
   const [result, setResult] = useState("Submit Application");
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -38,9 +39,12 @@ export default function CareersPage() {
     
     const emailVal = nativeData.get("email");
     if (emailVal) searchParams.append("entry.965589471", emailVal as string);
-    
-    if (focusedArea) searchParams.append("entry.758056272", focusedArea);
-    
+    if (focusedArea) {
+      searchParams.append("entry.758056272", focusedArea);
+      if (focusedArea === "__other_option__") {
+        searchParams.append("entry.758056272.other_option_response", otherRole || "Not specified");
+      }
+    }
     // Resume Link Extraction mapped strictly to the new Short Answer Google Form field
     const resumeLinkVal = nativeData.get("resumeLink");
     if (resumeLinkVal) {
@@ -63,6 +67,7 @@ export default function CareersPage() {
       setShowSuccessModal(true);
       formElement.reset();  // Uses hard reference!
       setFocusedArea('');
+      setOtherRole('');
       setFileName(null);
       
     } catch (err: any) {
@@ -102,6 +107,30 @@ export default function CareersPage() {
                placeholder="Select your area of expertise"
              />
            </motion.div>
+
+           <AnimatePresence>
+             {focusedArea === "__other_option__" && (
+               <motion.div
+                 initial={{ opacity: 0, height: 0, marginTop: 0 }}
+                 animate={{ opacity: 1, height: 'auto', marginTop: 16 }}
+                 exit={{ opacity: 0, height: 0, marginTop: 0 }}
+                 className="overflow-hidden"
+               >
+                 <motion.div variants={fadeUp}>
+                   <label className="block text-sm font-medium text-slate-700 mb-2">Please specify your role/field</label>
+                   <textarea
+                     name="otherRole"
+                     value={otherRole}
+                     onChange={(e) => setOtherRole(e.target.value)}
+                     required
+                     rows={3}
+                     className="w-full px-4 py-3.5 rounded-xl bg-white/80 backdrop-blur-sm border border-slate-200/80 focus:outline-none focus:ring-2 focus:ring-primary-blue/50 focus:border-primary-blue transition-all duration-300 shadow-sm placeholder-slate-400 resize-none"
+                     placeholder="Tell us what you do..."
+                   />
+                 </motion.div>
+               </motion.div>
+             )}
+           </AnimatePresence>
 
            <motion.div variants={fadeUp}>
              <label className="block text-sm font-medium text-slate-700 mb-2">Portfolio / Resume Link</label>
