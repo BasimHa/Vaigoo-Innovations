@@ -18,15 +18,19 @@ async function triggerAutoReply(submission: any) {
     const statusValue = submission.status ? submission.status.charAt(0).toUpperCase() + submission.status.slice(1) : 'New';
     formBody.append('entry.1687234610', statusValue);
 
-    await fetch(GOOGLE_FORM_URL, {
+    console.log(`[AutoReply] Sending to Google Form — name: ${submission.name}, email: ${submission.email}, type: ${typeValue}, status: ${statusValue}`);
+
+    const res = await fetch(GOOGLE_FORM_URL, {
       method: 'POST',
       body: formBody,
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded'
       }
     });
+
+    console.log(`[AutoReply] Google Form response status: ${res.status}`);
   } catch (err) {
-    console.error("Failed to trigger auto reply form:", err);
+    console.error("[AutoReply] Failed to trigger auto reply form:", err);
   }
 }
 
@@ -115,8 +119,9 @@ export async function PATCH(req: Request) {
     }
 
     // Trigger the automated Google Apps script in the background
+    // Pass status explicitly to guarantee the new value is sent (not stale DB data)
     if (result.data && result.data.length > 0) {
-      triggerAutoReply(result.data[0]);
+      triggerAutoReply({ ...result.data[0], status });
     }
 
     return NextResponse.json({ success: true });
