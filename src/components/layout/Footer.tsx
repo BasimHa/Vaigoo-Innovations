@@ -12,7 +12,7 @@ export const Footer = () => {
           <div className="lg:col-span-2">
             <Link href="/" className="flex items-center gap-3 mb-6">
               <Image 
-                src="/Images/logo/Gemini_Generated_Image_38mz5x38mz5x38mz.png" 
+                src="/Images/logo/logo-v.png" 
                 alt="Vaigoo Innovations Logo" 
                 width={44} 
                 height={44}

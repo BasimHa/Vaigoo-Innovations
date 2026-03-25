@@ -15,8 +15,8 @@ export const metadata: Metadata = {
   title: "Vaigoo Innovations | Future of Innovation",
   description: "We build intelligent digital systems for modern businesses. AI-powered solutions, scalable infrastructure, future-ready products.",
   icons: {
-    icon: "/Images/logo/Gemini_Generated_Image_38mz5x38mz5x38mz.png",
-    apple: "/Images/logo/Gemini_Generated_Image_38mz5x38mz5x38mz.png",
+    icon: "/Images/logo/logo-v.png",
+    apple: "/Images/logo/logo-v.png",
   },
 };
 

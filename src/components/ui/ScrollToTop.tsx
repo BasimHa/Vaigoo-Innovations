@@ -43,7 +43,7 @@ export const ScrollToTop = () => {
         >
           <div className="relative w-12 h-12 flex items-center justify-center">
             <Image 
-              src="/Images/logo/Gemini_Generated_Image_38mz5x38mz5x38mz.png" 
+              src="/Images/logo/logo-v.png" 
               alt="Scroll to top" 
               width={40} 
               height={40} 
