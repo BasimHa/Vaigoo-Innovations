@@ -49,7 +49,7 @@ export const ProjectsSection = () => {
           <motion.h2 variants={fadeUp} className="text-sm font-bold tracking-widest text-primary-blue uppercase mb-3">
             Case Studies
           </motion.h2>
-          <motion.h3 variants={fadeUp} className="text-4xl md:text-5xl font-bold tracking-tight mb-6 text-slate-900">
+          <motion.h3 variants={fadeUp} className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight mb-6 text-slate-900">
             Featured Work
           </motion.h3>
           <motion.p variants={fadeUp} className="text-lg text-slate-600">

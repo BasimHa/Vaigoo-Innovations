@@ -6,7 +6,7 @@ import { Button } from '../ui/Button';
 
 export const CtaSection = () => {
   return (
-    <section className="py-32 relative overflow-hidden flex justify-center items-center">
+    <section className="py-20 md:py-32 relative overflow-hidden flex justify-center items-center">
       
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
         <motion.div
@@ -16,14 +16,14 @@ export const CtaSection = () => {
         >
           <motion.h2 
             variants={fadeUp} 
-            className="text-5xl md:text-7xl font-black text-slate-900 tracking-tight leading-tight mb-8"
+            className="text-4xl sm:text-5xl md:text-7xl font-black text-slate-900 tracking-tight leading-tight mb-6 md:mb-8"
           >
             Let's build something <span className="text-gradient-primary">powerful</span>.
           </motion.h2>
           
           <motion.p 
             variants={fadeUp} 
-            className="text-xl text-slate-600 mb-12 max-w-2xl mx-auto"
+            className="text-base sm:text-xl text-slate-600 mb-10 md:mb-12 max-w-2xl mx-auto px-2 sm:px-0"
           >
             Whether you need a scalable web application, an AI integration, or a complete digital overhaul, our team is ready to deliver.
           </motion.p>

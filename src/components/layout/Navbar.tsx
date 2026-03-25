@@ -39,11 +39,11 @@ export const Navbar = () => {
               className="flex items-center gap-3 cursor-pointer"
             >
               <Image 
-                src="/Images/logo/Gemini_Generated_Image_38mz5x38mz5x38mz.png" 
+                src="/android-chrome-512x512.png" 
                 alt="Vaigoo Innovations Logo" 
                 width={40} 
                 height={40}
-                className="rounded-lg shadow-sm"
+                className="rounded-lg shadow-sm w-8 h-8 sm:w-10 sm:h-10"
               />
               <span className="text-2xl font-bold tracking-tight text-slate-900 hidden sm:block">
                 Vaigoo <span className="text-gradient-primary">Innovations</span>
@@ -52,7 +52,7 @@ export const Navbar = () => {
           </Link>
 
           {/* Desktop Nav */}
-          <div className="hidden md:flex items-center space-x-8">
+          <div className="hidden lg:flex items-center space-x-8">
             {navLinks.map((link, idx) => (
               <motion.div key={link.name} initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.1 }}>
                 <Link
@@ -71,7 +71,7 @@ export const Navbar = () => {
           </div>
 
           {/* Mobile Menu Button */}
-          <div className="md:hidden">
+          <div className="lg:hidden">
             <button 
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               className="text-slate-900 p-2 focus:outline-none"
@@ -89,7 +89,7 @@ export const Navbar = () => {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="md:hidden glass border-t border-slate-100 overflow-hidden"
+            className="lg:hidden glass border-t border-slate-100 overflow-hidden"
           >
             <div className="px-6 py-6 space-y-6 flex flex-col">
               {navLinks.map((link) => (

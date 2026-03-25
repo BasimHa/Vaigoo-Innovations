@@ -35,7 +35,7 @@ const features = [
 
 export const WhatWeBuildSection = () => {
   return (
-    <section id="what-we-build" className="py-24 relative">
+    <section id="what-we-build" className="py-16 md:py-24 relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div 
           initial="hidden"
@@ -47,7 +47,7 @@ export const WhatWeBuildSection = () => {
           <motion.h2 variants={fadeUp} className="text-sm font-bold tracking-widest text-primary-blue uppercase mb-3">
             Capabilities
           </motion.h2>
-          <motion.h3 variants={fadeUp} className="text-4xl md:text-5xl font-bold text-slate-900 tracking-tight mb-6">
+          <motion.h3 variants={fadeUp} className="text-3xl sm:text-4xl md:text-5xl font-bold text-slate-900 tracking-tight mb-6">
             What We Build
           </motion.h3>
           <motion.p variants={fadeUp} className="text-lg text-slate-600">

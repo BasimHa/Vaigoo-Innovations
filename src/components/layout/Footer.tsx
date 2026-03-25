@@ -8,7 +8,7 @@ import { useRouter } from 'next/navigation';
 export const Footer = () => {
   const router = useRouter();
   return (
-    <footer className="relative border-t border-slate-200/50 pt-20 pb-10 mt-12 z-10 w-full backdrop-blur-sm">
+    <footer className="relative border-t border-slate-200/50 pt-12 md:pt-20 pb-10 mt-12 z-10 w-full backdrop-blur-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12 mb-16">
           
@@ -16,7 +16,7 @@ export const Footer = () => {
           <div className="lg:col-span-2">
             <button onClick={() => router.push("/")} className="flex items-center gap-3 mb-6 appearance-none bg-transparent border-none p-0 cursor-pointer text-left w-full">
               <Image 
-                src="/Images/logo/Gemini_Generated_Image_38mz5x38mz5x38mz.png" 
+                src="/android-chrome-512x512.png" 
                 alt="Vaigoo Innovations Logo" 
                 width={44} 
                 height={44}

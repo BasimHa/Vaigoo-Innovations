@@ -26,8 +26,8 @@ export const WhyVaigooSection = () => {
             <motion.h2 variants={fadeUp} className="text-sm font-bold tracking-widest text-primary-blue uppercase mb-3">
               Why Vaigoo
             </motion.h2>
-            <motion.h3 variants={fadeUp} className="text-4xl md:text-5xl font-bold text-slate-900 tracking-tight mb-6">
-              Built for <span className="text-gradient-primary">Speed & Scale</span>
+            <motion.h3 variants={fadeUp} className="text-3xl sm:text-4xl md:text-5xl font-bold text-slate-900 tracking-tight mb-6">
+              Built for <span className="text-gradient-primary">Speed &amp; Scale</span>
             </motion.h3>
             <motion.p variants={fadeUp} className="text-lg text-slate-600 mb-8 leading-relaxed">
               We operate at the intersection of high-end design, robust software engineering, and artificial intelligence. Our solutions aren't just websites—they are digital business engines. 
@@ -46,7 +46,7 @@ export const WhyVaigooSection = () => {
               <motion.div 
                 key={idx} 
                 variants={fadeUp} 
-                className="bg-slate-50 rounded-3xl p-8 border border-slate-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group"
+                className="bg-slate-50 rounded-3xl p-6 md:p-8 border border-slate-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group"
               >
                 <div className="flex items-center space-x-3 mb-6">
                   <div className="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center group-hover:scale-110 group-hover:bg-primary-blue/5 transition-transform">

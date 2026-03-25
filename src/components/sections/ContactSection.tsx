@@ -60,7 +60,7 @@ export const ContactSection = () => {
   };
 
   return (
-    <section id="contact" className="py-24 relative">
+    <section id="contact" className="py-16 md:py-24 relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
           
@@ -73,7 +73,7 @@ export const ContactSection = () => {
             <motion.h2 variants={fadeUp} className="text-sm font-bold tracking-widest text-primary-blue uppercase mb-3">
               Get In Touch
             </motion.h2>
-            <motion.h3 variants={fadeUp} className="text-4xl md:text-5xl font-bold tracking-tight text-slate-900 mb-6">
+            <motion.h3 variants={fadeUp} className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-slate-900 mb-6">
               Let's start a <span className="text-gradient-primary">conversation</span>
             </motion.h3>
             <motion.p variants={fadeUp} className="text-lg text-slate-600 mb-12">

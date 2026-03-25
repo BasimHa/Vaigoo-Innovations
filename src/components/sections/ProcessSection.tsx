@@ -27,7 +27,7 @@ const steps = [
 
 export const ProcessSection = () => {
   return (
-    <section id="process" className="py-24 relative overflow-hidden">
+    <section id="process" className="py-16 md:py-24 relative overflow-hidden">
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <motion.div 
@@ -40,7 +40,7 @@ export const ProcessSection = () => {
           <motion.h2 variants={fadeUp} className="text-sm font-bold tracking-widest text-primary-blue uppercase mb-3">
             Our Methodology
           </motion.h2>
-          <motion.h3 variants={fadeUp} className="text-4xl md:text-5xl font-bold text-slate-900 tracking-tight mb-6">
+          <motion.h3 variants={fadeUp} className="text-3xl sm:text-4xl md:text-5xl font-bold text-slate-900 tracking-tight mb-6">
             How We Work
           </motion.h3>
           <motion.p variants={fadeUp} className="text-lg text-slate-600">
