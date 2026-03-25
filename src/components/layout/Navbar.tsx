@@ -39,7 +39,7 @@ export const Navbar = () => {
               className="flex items-center gap-3 cursor-pointer"
             >
               <Image 
-                src="/Images/logo/logo-v.png" 
+                src="/Images/logo/Gemini_Generated_Image_38mz5x38mz5x38mz.png" 
                 alt="Vaigoo Innovations Logo" 
                 width={40} 
                 height={40}
