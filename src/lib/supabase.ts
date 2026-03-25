@@ -31,7 +31,7 @@ export const supabaseREST = {
     }
   },
 
-  async select(table: string, query: string = 'select=*&order=createdAt.desc') {
+  async select(table: string, query: string = 'select=*&order=createdat.desc') {
     const { url, key } = getSupabaseConfig();
     if (!url || !key) return { data: [], error: "No DB Credentials" };
 

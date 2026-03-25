@@ -11,7 +11,16 @@ export async function POST(req: Request) {
     }
 
     const result = await supabaseREST.insert('submissions', {
-       ...data,
+       type: data.type,
+       name: data.name,
+       email: data.email,
+       phone: data.phone,
+       message: data.message,
+       position: data.position,
+       employmenttype: data.employmentType || data.employmenttype,
+       duration: data.duration,
+       paidtype: data.paidType || data.paidtype,
+       resume: data.resume,
        status: 'new'
     });
 
@@ -37,7 +46,7 @@ export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const type = searchParams.get('type');
   
-  let query = 'select=*&order=createdAt.desc';
+  let query = 'select=*&order=createdat.desc';
   if (type && type !== 'all') {
     query += `&type=eq.${type}`;
   }
@@ -48,7 +57,14 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: result.error }, { status: 500 });
   }
 
-  return NextResponse.json({ data: result.data });
+  const mappedData = (result.data || []).map((r: any) => ({
+    ...r,
+    employmentType: r.employmenttype || r.employmentType,
+    paidType: r.paidtype || r.paidType,
+    createdAt: r.createdat || r.createdAt
+  }));
+
+  return NextResponse.json({ data: mappedData });
 }
 
 // Handle PATCH to update status
