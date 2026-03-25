@@ -3,8 +3,10 @@
 import { Globe, MessageCircle, Mail, MapPin, Phone, Clock, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 
 export const Footer = () => {
+  const router = useRouter();
   return (
     <footer className="relative border-t border-slate-200/50 pt-20 pb-10 mt-12 z-10 w-full backdrop-blur-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -12,7 +14,7 @@ export const Footer = () => {
           
           {/* Brand & About */}
           <div className="lg:col-span-2">
-            <Link href="/" className="flex items-center gap-3 mb-6">
+            <button onClick={() => router.push("/")} className="flex items-center gap-3 mb-6 appearance-none bg-transparent border-none p-0 cursor-pointer text-left w-full">
               <Image 
                 src="/Images/logo/Gemini_Generated_Image_38mz5x38mz5x38mz.png" 
                 alt="Vaigoo Innovations Logo" 
@@ -23,7 +25,7 @@ export const Footer = () => {
               <span className="text-2xl font-bold tracking-tight text-slate-900">
                 Vaigoo <span className="text-gradient-primary">Innovations</span>
               </span>
-            </Link>
+            </button>
             <p className="text-slate-600 mb-8 max-w-md leading-relaxed">
               We are a next-generation digital solutions technology company. We specialize in building intelligent systems, AI-driven applications, and scalable platforms that empower modern businesses to reach their highest potential.
             </p>
@@ -41,11 +43,11 @@ export const Footer = () => {
           <div>
             <h4 className="font-bold text-slate-900 mb-6 uppercase tracking-wider text-sm">Our Services</h4>
             <ul className="space-y-4 text-slate-600">
-              <li><Link href="/#what-we-build" className="hover:text-primary-blue transition-colors flex items-center gap-2"><ArrowRight size={14} className="text-primary-blue/50" /> AI Systems</Link></li>
-              <li><Link href="/#what-we-build" className="hover:text-primary-blue transition-colors flex items-center gap-2"><ArrowRight size={14} className="text-primary-blue/50" /> Smart Websites</Link></li>
-              <li><Link href="/#what-we-build" className="hover:text-primary-blue transition-colors flex items-center gap-2"><ArrowRight size={14} className="text-primary-blue/50" /> Scalable E-commerce</Link></li>
-              <li><Link href="/#what-we-build" className="hover:text-primary-blue transition-colors flex items-center gap-2"><ArrowRight size={14} className="text-primary-blue/50" /> Growth Systems</Link></li>
-              <li><Link href="/#what-we-build" className="hover:text-primary-blue transition-colors flex items-center gap-2"><ArrowRight size={14} className="text-primary-blue/50" /> Custom SaaS Tools</Link></li>
+              <li><button onClick={() => router.push("/#what-we-build")} className="appearance-none bg-transparent border-none p-0 text-left w-full cursor-pointer hover:text-primary-blue transition-colors flex items-center gap-2"><ArrowRight size={14} className="text-primary-blue/50" /> AI Systems</button></li>
+              <li><button onClick={() => router.push("/#what-we-build")} className="appearance-none bg-transparent border-none p-0 text-left w-full cursor-pointer hover:text-primary-blue transition-colors flex items-center gap-2"><ArrowRight size={14} className="text-primary-blue/50" /> Smart Websites</button></li>
+              <li><button onClick={() => router.push("/#what-we-build")} className="appearance-none bg-transparent border-none p-0 text-left w-full cursor-pointer hover:text-primary-blue transition-colors flex items-center gap-2"><ArrowRight size={14} className="text-primary-blue/50" /> Scalable E-commerce</button></li>
+              <li><button onClick={() => router.push("/#what-we-build")} className="appearance-none bg-transparent border-none p-0 text-left w-full cursor-pointer hover:text-primary-blue transition-colors flex items-center gap-2"><ArrowRight size={14} className="text-primary-blue/50" /> Growth Systems</button></li>
+              <li><button onClick={() => router.push("/#what-we-build")} className="appearance-none bg-transparent border-none p-0 text-left w-full cursor-pointer hover:text-primary-blue transition-colors flex items-center gap-2"><ArrowRight size={14} className="text-primary-blue/50" /> Custom SaaS Tools</button></li>
             </ul>
           </div>
           
@@ -53,11 +55,11 @@ export const Footer = () => {
           <div>
             <h4 className="font-bold text-slate-900 mb-6 uppercase tracking-wider text-sm">Company</h4>
             <ul className="space-y-4 text-slate-600">
-              <li><Link href="/about" className="hover:text-primary-blue transition-colors">About Us</Link></li>
-              <li><Link href="/process" className="hover:text-primary-blue transition-colors">Our Process</Link></li>
-              <li><Link href="/projects" className="hover:text-primary-blue transition-colors">Case Studies</Link></li>
-              <li><Link href="/careers" className="hover:text-primary-blue transition-colors">Careers</Link></li>
-              <li><Link href="/#contact" className="hover:text-primary-blue transition-colors">Contact</Link></li>
+              <li><button onClick={() => router.push("/about")} className="appearance-none bg-transparent border-none p-0 text-left w-full cursor-pointer hover:text-primary-blue transition-colors">About Us</button></li>
+              <li><button onClick={() => router.push("/process")} className="appearance-none bg-transparent border-none p-0 text-left w-full cursor-pointer hover:text-primary-blue transition-colors">Our Process</button></li>
+              <li><button onClick={() => router.push("/projects")} className="appearance-none bg-transparent border-none p-0 text-left w-full cursor-pointer hover:text-primary-blue transition-colors">Case Studies</button></li>
+              <li><button onClick={() => router.push("/careers")} className="appearance-none bg-transparent border-none p-0 text-left w-full cursor-pointer hover:text-primary-blue transition-colors">Careers</button></li>
+              <li><button onClick={() => router.push("/#contact")} className="appearance-none bg-transparent border-none p-0 text-left w-full cursor-pointer hover:text-primary-blue transition-colors">Contact</button></li>
             </ul>
           </div>
           
@@ -75,7 +77,7 @@ export const Footer = () => {
               </li>
               <li className="flex items-center gap-3">
                 <Mail size={18} className="text-primary-blue shrink-0" />
-                <a href="mailto:vaigooinnovations@gmail.com?subject=Client%20Inquiry%20-%20Vaigoo%20Innovations&body=Hello%20Vaigoo%20Team%2C%0A%0AI%20am%20interested%20in%20your%20services.%20Please%20share%20more%20details.%0A%0AName%3A%0ACompany%3A%0ARequirement%3A%0A%0AThank%20you." className="hover:text-primary-blue transition-colors">vaigooinnovations@gmail.com</a>
+                <button onClick={() => window.location.href="mailto:vaigooinnovations@gmail.com?subject=Client%20Inquiry%20-%20Vaigoo%20Innovations&body=Hello%20Vaigoo%20Team%2C%0A%0AI%20am%20interested%20in%20your%20services.%20Please%20share%20more%20details.%0A%0AName%3A%0ACompany%3A%0ARequirement%3A%0A%0AThank%20you."} className="appearance-none bg-transparent border-none p-0 text-left cursor-pointer hover:text-primary-blue transition-colors">vaigooinnovations@gmail.com</button>
               </li>
               <li className="flex items-center gap-3">
                 <Clock size={18} className="text-primary-blue shrink-0" />
@@ -90,9 +92,9 @@ export const Footer = () => {
         <div className="border-t border-slate-200/60 pt-8 flex flex-col md:flex-row justify-between items-center text-sm text-slate-500">
           <p className="mb-4 md:mb-0">© {new Date().getFullYear()} Vaigoo Innovations. All rights reserved.</p>
           <div className="flex space-x-6 font-medium">
-            <Link href="#" className="hover:text-primary-blue transition-colors">Privacy Policy</Link>
-            <Link href="#" className="hover:text-primary-blue transition-colors">Terms of Service</Link>
-            <Link href="#" className="hover:text-primary-blue transition-colors">Cookie Policy</Link>
+            <button onClick={() => router.push("#")} className="appearance-none bg-transparent border-none p-0 cursor-pointer hover:text-primary-blue transition-colors">Privacy Policy</button>
+            <button onClick={() => router.push("#")} className="appearance-none bg-transparent border-none p-0 cursor-pointer hover:text-primary-blue transition-colors">Terms of Service</button>
+            <button onClick={() => router.push("#")} className="appearance-none bg-transparent border-none p-0 cursor-pointer hover:text-primary-blue transition-colors">Cookie Policy</button>
           </div>
         </div>
       </div>
