@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { Search, RefreshCw, Mail, Briefcase, GraduationCap, CheckCircle, Clock, XCircle, Lock, Eye, Download } from 'lucide-react';
+import JobsManager from './JobsManager';
+import { Search, RefreshCw, Mail, Briefcase, GraduationCap, CheckCircle, Clock, XCircle, Lock, Eye, Download, Settings } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 type Submission = {
@@ -27,7 +28,7 @@ export default function AdminPortal() {
   
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState<'all' | 'contact' | 'career' | 'internship'>('all');
+  const [activeTab, setActiveTab] = useState<'all' | 'contact' | 'career' | 'internship' | 'jobs'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSub, setSelectedSub] = useState<Submission | null>(null);
 
@@ -165,6 +166,7 @@ export default function AdminPortal() {
               { id: 'contact', label: 'Contact Messages', icon: <Mail size={18} /> },
               { id: 'career', label: 'Careers', icon: <Briefcase size={18} /> },
               { id: 'internship', label: 'Internships', icon: <GraduationCap size={18} /> },
+              { id: 'jobs', label: 'Manage Jobs', icon: <Settings size={18} /> },
             ].map(tab => (
               <button
                 key={tab.id}
@@ -179,7 +181,10 @@ export default function AdminPortal() {
         </div>
 
         {/* Content Area */}
-        <div className="flex-1 bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden flex flex-col min-h-[500px]">
+        {activeTab === 'jobs' ? (
+          <JobsManager password={password} />
+        ) : (
+          <div className="flex-1 bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden flex flex-col min-h-[500px]">
            {/* Mobile Search */}
            <div className="p-4 border-b border-slate-100 md:hidden">
               <div className="relative">
@@ -258,6 +263,7 @@ export default function AdminPortal() {
              </div>
            )}
         </div>
+        )}
       </main>
 
       {/* Detail Modal Layer */}

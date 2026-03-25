@@ -5,9 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { UploadCloud, Code, Database, BrainCircuit, PenTool, TrendingUp, Presentation, CheckCircle2, X, MapPin, Clock, ChevronDown, Briefcase } from 'lucide-react';
 import { fadeUp, staggerContainer } from '@/components/animations/variants';
 import { CustomSelect, Option } from '@/components/ui/CustomSelect';
-import { getOpenJobs } from '@/lib/jobsStore';
-import type { JobListing } from '@/lib/jobs';
-import { isInternship } from '@/lib/jobs';
+import { JobListing, isInternship } from '@/lib/jobs';
 
 const departmentOptions: Option[] = [
   { value: "Frontend", label: "Frontend Engineering", description: "React, Next.js, Framer Motion", icon: <Code size={20} /> },
@@ -129,9 +127,14 @@ export default function CareersPage() {
   const [result, setResult] = useState("Submit Application");
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
-  // Load open jobs from localStorage on mount
+  // Fetch open jobs from global Supabase ATS
   useEffect(() => {
-    setOpenJobs(getOpenJobs());
+    fetch('/api/jobs?status=open')
+      .then(res => res.json())
+      .then(data => {
+        if (data.data) setOpenJobs(data.data);
+      })
+      .catch(err => console.error("Failed to load jobs", err));
   }, []);
 
   const handleApply = (job: JobListing) => {
