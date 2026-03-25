@@ -1,6 +1,35 @@
 import { NextResponse } from 'next/server';
 import { supabaseREST } from '@/lib/supabase';
 
+// Helper to reliably trigger the legacy Google App Script email responder
+async function triggerAutoReply(submission: any) {
+  try {
+    const GOOGLE_FORM_URL = 'https://docs.google.com/forms/u/0/d/e/1FAIpQLSfgCsPnjRsiUQCltIeC0rM2Fa-4IbNgAJZmwoM8tfOm_fYtZg/formResponse';
+    const formBody = new URLSearchParams();
+    
+    // Required fields from the DOM
+    formBody.append('entry.1424804324', submission.name || 'Applicant');
+    formBody.append('entry.1445404356', submission.email || '');
+    
+    // Properly case enum types
+    const typeValue = submission.type ? submission.type.charAt(0).toUpperCase() + submission.type.slice(1) : 'Contact';
+    formBody.append('entry.1712063615', typeValue);
+    
+    const statusValue = submission.status ? submission.status.charAt(0).toUpperCase() + submission.status.slice(1) : 'New';
+    formBody.append('entry.1687234610', statusValue);
+
+    await fetch(GOOGLE_FORM_URL, {
+      method: 'POST',
+      body: formBody,
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      }
+    });
+  } catch (err) {
+    console.error("Failed to trigger auto reply form:", err);
+  }
+}
+
 // Handle POST to save an application/contact form
 export async function POST(req: Request) {
   try {
@@ -83,6 +112,11 @@ export async function PATCH(req: Request) {
     const result = await supabaseREST.update('submissions', id, { status });
     if (result.error) {
       return NextResponse.json({ error: result.error }, { status: 500 });
+    }
+
+    // Trigger the automated Google Apps script in the background
+    if (result.data && result.data.length > 0) {
+      triggerAutoReply(result.data[0]);
     }
 
     return NextResponse.json({ success: true });
