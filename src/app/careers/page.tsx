@@ -116,8 +116,8 @@ export default function CareersPage() {
                  exit={{ opacity: 0, height: 0, marginTop: 0 }}
                  className="overflow-hidden"
                >
-                 <motion.div variants={fadeUp}>
-                   <label className="block text-sm font-medium text-slate-700 mb-2">Please specify your role/field</label>
+                 <div className="space-y-4 px-1">
+                    <label className="block text-sm font-medium text-slate-700 mb-2">Please specify your role/field</label>
                    <textarea
                      name="otherRole"
                      value={otherRole}
@@ -127,7 +127,7 @@ export default function CareersPage() {
                      className="w-full px-4 py-3.5 rounded-xl bg-white/80 backdrop-blur-sm border border-slate-200/80 focus:outline-none focus:ring-2 focus:ring-primary-blue/50 focus:border-primary-blue transition-all duration-300 shadow-sm placeholder-slate-400 resize-none"
                      placeholder="Tell us what you do..."
                    />
-                 </motion.div>
+                 </div>
                </motion.div>
              )}
            </AnimatePresence>
