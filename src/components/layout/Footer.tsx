@@ -1,3 +1,5 @@
+"use client";
+
 import { Globe, MessageCircle, Mail, MapPin, Phone, Clock, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -26,12 +28,12 @@ export const Footer = () => {
               We are a next-generation digital solutions technology company. We specialize in building intelligent systems, AI-driven applications, and scalable platforms that empower modern businesses to reach their highest potential.
             </p>
             <div className="flex space-x-4">
-              <a href="https://vaigoo-innovations.vercel.app" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-white/50 border border-slate-200 shadow-sm flex items-center justify-center text-slate-600 hover:text-primary-blue transition-all duration-300 hover:scale-110">
+              <button onClick={() => window.open("https://vaigoo-innovations.vercel.app", "_blank")} className="w-10 h-10 rounded-full bg-white/50 border border-slate-200 shadow-sm flex items-center justify-center text-slate-600 hover:text-primary-blue transition-all duration-300 hover:scale-110 cursor-pointer">
                 <Globe size={20} />
-              </a>
-              <a href="https://wa.me/9037049531" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-white/50 border border-slate-200 shadow-sm flex items-center justify-center text-slate-600 hover:text-primary-blue transition-all duration-300 hover:scale-110">
+              </button>
+              <button onClick={() => window.open("https://wa.me/9037049531", "_blank")} className="w-10 h-10 rounded-full bg-white/50 border border-slate-200 shadow-sm flex items-center justify-center text-slate-600 hover:text-primary-blue transition-all duration-300 hover:scale-110 cursor-pointer">
                 <MessageCircle size={20} />
-              </a>
+              </button>
             </div>
           </div>
           
