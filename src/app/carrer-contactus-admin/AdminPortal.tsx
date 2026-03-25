@@ -45,7 +45,12 @@ export default function AdminPortal() {
         setSubmissions(data.data || []);
         setIsAuthenticated(true);
       } else {
-        setAuthError('Invalid Password');
+        const errData = await res.json().catch(() => ({}));
+        if (res.status === 401) {
+          setAuthError('Invalid Passkey');
+        } else {
+          setAuthError(`Database Error: ${errData.error || 'Check Supabase Keys & Schema'}`);
+        }
         setIsAuthenticated(false);
       }
     } catch (e) {
