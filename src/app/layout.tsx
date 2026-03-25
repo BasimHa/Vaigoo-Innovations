@@ -12,11 +12,11 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Vaigoo Innovations | Future of Innovation",
+  title: "Vaigoo Innovations",
   description: "We build intelligent digital systems for modern businesses. AI-powered solutions, scalable infrastructure, future-ready products.",
   icons: {
-    icon: "/Images/logo/Gemini_Generated_Image_38mz5x38mz5x38mz.png",
-    apple: "/Images/logo/Gemini_Generated_Image_38mz5x38mz5x38mz.png",
+    icon: "/favicon.png",
+    apple: "/favicon.png",
   },
 };
 

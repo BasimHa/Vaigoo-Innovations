@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowUp } from 'lucide-react';
-import Image from 'next/image';
+
 
 export const ScrollToTop = () => {
   const [isVisible, setIsVisible] = useState(false);
@@ -42,12 +42,8 @@ export const ScrollToTop = () => {
           aria-label="Scroll to top"
         >
           <div className="relative w-12 h-12 flex items-center justify-center">
-            <Image 
-              src="/Images/logo/Gemini_Generated_Image_38mz5x38mz5x38mz.png" 
-              alt="Scroll to top" 
-              width={40} 
-              height={40} 
-              className="group-hover:scale-110 transition-transform duration-300 rounded-lg"
+            <ArrowUp 
+              className="w-6 h-6 text-primary-blue group-hover:-translate-y-1 transition-transform duration-300"
             />
           </div>
         </motion.button>
