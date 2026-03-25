@@ -76,7 +76,7 @@ export const Footer = () => {
               </li>
               <li className="flex items-center gap-3">
                 <Mail size={18} className="text-primary-blue shrink-0" />
-                <a href="mailto:vaigooinnovations@gmail.com?subject=Client%20Inquiry%20-%20Vaigoo%20Innovations&body=Hello%20Vaigoo%20Team%2C%0A%0AI%20am%20interested%20in%20your%20services.%20Please%20share%20more%20details.%0A%0AName%3A%0ACompany%3A%0ARequirement%3A%0A%0AThank%20you." className="hover:text-primary-blue transition-colors">https://vaigoo-innovations.vercel.app/#contact</a>
+                <a href="mailto:vaigooinnovations@gmail.com?subject=Client%20Inquiry%20-%20Vaigoo%20Innovations&body=Hello%20Vaigoo%20Team%2C%0A%0AI%20am%20interested%20in%20your%20services.%20Please%20share%20more%20details.%0A%0AName%3A%0ACompany%3A%0ARequirement%3A%0A%0AThank%20you." className="hover:text-primary-blue transition-colors">vaigooinnovations@gmail.com</a>
               </li>
               <li className="flex items-center gap-3">
                 <Clock size={18} className="text-primary-blue shrink-0" />
