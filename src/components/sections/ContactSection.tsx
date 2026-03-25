@@ -87,7 +87,7 @@ export const ContactSection = () => {
                 </div>
                 <div>
                   <p className="font-semibold text-slate-900">Email us directly</p>
-                  <a href="mailto:vaigooinnovations@gmail.com?subject=Client%20Inquiry%20-%20Vaigoo%20Innovations&body=Hello%20Vaigoo%20Team%2C%0A%0AI%20am%20interested%20in%20your%20services.%20Please%20share%20more%20details.%0A%0AName%3A%0ACompany%3A%0ARequirement%3A%0A%0AThank%20you." className="text-primary-blue hover:underline">vaigooinnovations@gmail.com</a>
+                  <a href="mailto:vaigooinnovations@gmail.com?subject=Client%20Inquiry%20-%20Vaigoo%20Innovations&body=Hello%20Vaigoo%20Team%2C%0A%0AI%20am%20interested%20in%20your%20services.%20Please%20share%20more%20details.%0A%0AName%3A%0ACompany%3A%0ARequirement%3A%0A%0AThank%20you." className="text-primary-blue hover:underline">https://vaigoo-innovations.vercel.app/#contact</a>
                 </div>
               </motion.div>
               
