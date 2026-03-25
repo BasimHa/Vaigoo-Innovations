@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowUp } from 'lucide-react';
+import Image from 'next/image';
 
 export const ScrollToTop = () => {
   const [isVisible, setIsVisible] = useState(false);
@@ -40,7 +41,13 @@ export const ScrollToTop = () => {
           className="fixed bottom-8 right-8 z-[100] p-3.5 rounded-full bg-gradient-primary text-white shadow-lg shadow-blue-500/30 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 focus:outline-none flex items-center justify-center cursor-pointer"
           aria-label="Scroll to top"
         >
-          <ArrowUp size={24} strokeWidth={2.5} />
+          <Image 
+            src="/Images/logo/Gemini_Generated_Image_38mz5x38mz5x38mz.png" 
+            alt="Scroll to top" 
+            width={24} 
+            height={24} 
+            className="filter invert brightness-0"
+          />
         </motion.button>
       )}
     </AnimatePresence>
