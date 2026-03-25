@@ -1,0 +1,92 @@
+import { Globe, MessageCircle, Mail, MapPin, Phone, Clock, ArrowRight } from 'lucide-react';
+import Link from 'next/link';
+
+export const Footer = () => {
+  return (
+    <footer className="relative border-t border-slate-200/50 pt-20 pb-10 mt-12 z-10 w-full backdrop-blur-sm">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12 mb-16">
+          
+          {/* Brand & About */}
+          <div className="lg:col-span-2">
+            <div className="text-2xl font-bold tracking-tight text-slate-900 mb-6 cursor-pointer">
+              Vaigoo <span className="text-gradient-primary">Innovations</span>
+            </div>
+            <p className="text-slate-600 mb-8 max-w-md leading-relaxed">
+              We are a next-generation digital solutions technology company. We specialize in building intelligent systems, AI-driven applications, and scalable platforms that empower modern businesses to reach their highest potential.
+            </p>
+            <div className="flex space-x-4">
+              <a href="#" className="w-10 h-10 rounded-full bg-white/50 border border-slate-200 shadow-sm flex items-center justify-center text-slate-600 hover:text-primary-blue transition-all duration-300 hover:scale-110">
+                <Globe size={20} />
+              </a>
+              <a href="#" className="w-10 h-10 rounded-full bg-white/50 border border-slate-200 shadow-sm flex items-center justify-center text-slate-600 hover:text-primary-blue transition-all duration-300 hover:scale-110">
+                <MessageCircle size={20} />
+              </a>
+              <a href="#" className="w-10 h-10 rounded-full bg-white/50 border border-slate-200 shadow-sm flex items-center justify-center text-slate-600 hover:text-primary-blue transition-all duration-300 hover:scale-110">
+                <Mail size={20} />
+              </a>
+            </div>
+          </div>
+          
+          {/* Services */}
+          <div>
+            <h4 className="font-bold text-slate-900 mb-6 uppercase tracking-wider text-sm">Our Services</h4>
+            <ul className="space-y-4 text-slate-600">
+              <li><Link href="/#what-we-build" className="hover:text-primary-blue transition-colors flex items-center gap-2"><ArrowRight size={14} className="text-primary-blue/50" /> AI Systems</Link></li>
+              <li><Link href="/#what-we-build" className="hover:text-primary-blue transition-colors flex items-center gap-2"><ArrowRight size={14} className="text-primary-blue/50" /> Smart Websites</Link></li>
+              <li><Link href="/#what-we-build" className="hover:text-primary-blue transition-colors flex items-center gap-2"><ArrowRight size={14} className="text-primary-blue/50" /> Scalable E-commerce</Link></li>
+              <li><Link href="/#what-we-build" className="hover:text-primary-blue transition-colors flex items-center gap-2"><ArrowRight size={14} className="text-primary-blue/50" /> Growth Systems</Link></li>
+              <li><Link href="/#what-we-build" className="hover:text-primary-blue transition-colors flex items-center gap-2"><ArrowRight size={14} className="text-primary-blue/50" /> Custom SaaS Tools</Link></li>
+            </ul>
+          </div>
+          
+          {/* Company */}
+          <div>
+            <h4 className="font-bold text-slate-900 mb-6 uppercase tracking-wider text-sm">Company</h4>
+            <ul className="space-y-4 text-slate-600">
+              <li><Link href="/about" className="hover:text-primary-blue transition-colors">About Us</Link></li>
+              <li><Link href="/process" className="hover:text-primary-blue transition-colors">Our Process</Link></li>
+              <li><Link href="/projects" className="hover:text-primary-blue transition-colors">Case Studies</Link></li>
+              <li><Link href="/careers" className="hover:text-primary-blue transition-colors">Careers</Link></li>
+              <li><Link href="/#contact" className="hover:text-primary-blue transition-colors">Contact</Link></li>
+            </ul>
+          </div>
+          
+          {/* Contact Details */}
+          <div>
+            <h4 className="font-bold text-slate-900 mb-6 uppercase tracking-wider text-sm">Contact Info</h4>
+            <ul className="space-y-5 text-slate-600">
+              <li className="flex items-start gap-3">
+                <MapPin size={18} className="text-primary-blue mt-0.5 shrink-0" />
+                <span>Anakkaru Veedu Kumily P.O,<br/>Idukki, Kerala 685509</span>
+              </li>
+              <li className="flex items-center gap-3">
+                <Phone size={18} className="text-primary-blue shrink-0" />
+                <span>+91 9037049531</span>
+              </li>
+              <li className="flex items-center gap-3">
+                <Mail size={18} className="text-primary-blue shrink-0" />
+                <a href="mailto:vaigooinnovations@gmail.com" className="hover:text-primary-blue transition-colors">vaigooinnovations@gmail.com</a>
+              </li>
+              <li className="flex items-center gap-3">
+                <Clock size={18} className="text-primary-blue shrink-0" />
+                <span>Mon-Fri: 9:00 AM - 6:00 PM</span>
+              </li>
+            </ul>
+          </div>
+
+        </div>
+        
+        {/* Bottom Bar */}
+        <div className="border-t border-slate-200/60 pt-8 flex flex-col md:flex-row justify-between items-center text-sm text-slate-500">
+          <p className="mb-4 md:mb-0">© {new Date().getFullYear()} Vaigoo Innovations. All rights reserved.</p>
+          <div className="flex space-x-6 font-medium">
+            <Link href="#" className="hover:text-primary-blue transition-colors">Privacy Policy</Link>
+            <Link href="#" className="hover:text-primary-blue transition-colors">Terms of Service</Link>
+            <Link href="#" className="hover:text-primary-blue transition-colors">Cookie Policy</Link>
+          </div>
+        </div>
+      </div>
+    </footer>
+  );
+};
