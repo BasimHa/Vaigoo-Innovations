@@ -32,9 +32,6 @@ export const Footer = () => {
               <a href="https://wa.me/9037049531" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-white/50 border border-slate-200 shadow-sm flex items-center justify-center text-slate-600 hover:text-primary-blue transition-all duration-300 hover:scale-110">
                 <MessageCircle size={20} />
               </a>
-              <a href="mailto:vaigooinnovations@gmail.com?subject=Client%20Inquiry%20-%20Vaigoo%20Innovations&body=Hello%20Vaigoo%20Team%2C%0A%0AI%20am%20interested%20in%20your%20services.%20Please%20share%20more%20details.%0A%0AName%3A%0ACompany%3A%0ARequirement%3A%0A%0AThank%20you." className="w-10 h-10 rounded-full bg-white/50 border border-slate-200 shadow-sm flex items-center justify-center text-slate-600 hover:text-primary-blue transition-all duration-300 hover:scale-110">
-                <Mail size={20} />
-              </a>
             </div>
           </div>
           
