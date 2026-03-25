@@ -1,10 +1,13 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { UploadCloud, Code, Database, BrainCircuit, PenTool, TrendingUp, Presentation, CheckCircle2, X } from 'lucide-react';
+import { UploadCloud, Code, Database, BrainCircuit, PenTool, TrendingUp, Presentation, CheckCircle2, X, MapPin, Clock, ChevronDown, Briefcase } from 'lucide-react';
 import { fadeUp, staggerContainer } from '@/components/animations/variants';
 import { CustomSelect, Option } from '@/components/ui/CustomSelect';
+import { getOpenJobs } from '@/lib/jobsStore';
+import type { JobListing } from '@/lib/jobs';
+import { isInternship } from '@/lib/jobs';
 
 const departmentOptions: Option[] = [
   { value: "Frontend", label: "Frontend Engineering", description: "React, Next.js, Framer Motion", icon: <Code size={20} /> },
@@ -15,12 +18,137 @@ const departmentOptions: Option[] = [
   { value: "__other_option__", label: "Other / General", description: "Sales, Operations, General", icon: <Presentation size={20} /> },
 ];
 
+// ─── Job listing badge helpers ───────────────────────────────────────────────
+
+function EmploymentBadge({ type }: { type: string }) {
+  const isInt = isInternship(type as import('@/lib/jobs').EmploymentType);
+  return (
+    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${
+      isInt ? 'bg-violet-100 text-violet-700' : 'bg-blue-100 text-blue-700'
+    }`}>
+      {type}
+    </span>
+  );
+}
+
+function DeptBadge({ dept }: { dept: string }) {
+  return (
+    <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-slate-100 text-slate-600">
+      {dept}
+    </span>
+  );
+}
+
+// ─── Public job listings display (read-only) ──────────────────────────────────
+
+function JobListingsDisplay({ jobs, onApply }: { jobs: JobListing[], onApply: (job: JobListing) => void }) {
+  return (
+    <div className="mb-12">
+      <AnimatePresence mode="wait">
+        {jobs.length === 0 ? (
+          <motion.div 
+            key="empty"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="mb-10 text-center"
+          >
+            <div className="inline-flex items-center gap-2.5 px-5 py-3 rounded-2xl bg-white/60 backdrop-blur-md border border-slate-200/50 shadow-sm text-slate-500 text-sm">
+              <Briefcase size={16} className="text-slate-400" />
+              No open positions right now — check back soon!
+            </div>
+          </motion.div>
+        ) : (
+          <motion.div 
+            key="list"
+            variants={staggerContainer} 
+            initial="hidden" 
+            animate="visible" 
+            exit="hidden"
+          >
+            <motion.h2 variants={fadeUp} className="text-2xl font-bold text-slate-900 mb-6 font-primary">
+              Open <span className="text-gradient-primary">Positions</span>
+            </motion.h2>
+            <div className="grid grid-cols-1 gap-4">
+              {jobs.map((job) => (
+                <motion.div
+                  key={job.id}
+                  variants={fadeUp}
+                  className="bg-white/70 backdrop-blur-md rounded-2xl p-6 border border-slate-200/50 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300"
+                >
+                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-lg font-bold text-slate-900 mb-2">{job.title}</h3>
+                      <div className="flex flex-wrap items-center gap-2 mb-3">
+                        <DeptBadge dept={job.department} />
+                        <EmploymentBadge type={job.employmentType} />
+                        <span className="inline-flex items-center gap-1 text-xs text-slate-500">
+                          <MapPin size={12} /> {job.location}
+                        </span>
+                        {job.duration && (
+                          <span className="inline-flex items-center gap-1 text-xs text-slate-500">
+                            <Clock size={12} /> {job.duration}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-slate-600 text-sm leading-relaxed line-clamp-3">{job.description}</p>
+                      {job.salaryStipend && (
+                        <p className="text-xs text-slate-500 mt-2">💰 {job.salaryStipend}</p>
+                      )}
+                    </div>
+                    <div className="shrink-0">
+                      <a
+                        href="#apply"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          onApply(job);
+                        }}
+                        className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-gradient-primary text-white text-sm font-semibold shadow-sm hover:shadow-md hover:shadow-blue-500/20 hover:-translate-y-0.5 transition-all duration-300"
+                      >
+                        Apply Now <ChevronDown size={14} className="rotate-[-90deg]" />
+                      </a>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+// ─── Main page ────────────────────────────────────────────────────────────────
+
 export default function CareersPage() {
+  const [openJobs, setOpenJobs] = useState<JobListing[]>([]);
   const [focusedArea, setFocusedArea] = useState<string>('');
   const [otherRole, setOtherRole] = useState<string>('');
   const [fileName, setFileName] = useState<string | null>(null);
   const [result, setResult] = useState("Submit Application");
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+
+  // Load open jobs from localStorage on mount
+  useEffect(() => {
+    setOpenJobs(getOpenJobs());
+  }, []);
+
+  const handleApply = (job: JobListing) => {
+    const role = job.department;
+    const exactMatch = departmentOptions.find(d => d.value === role || d.label === role);
+    
+    if (exactMatch && exactMatch.value !== '__other_option__') {
+      setFocusedArea(exactMatch.value);
+    } else {
+      setFocusedArea('__other_option__');
+      setOtherRole(role);
+    }
+    
+    setTimeout(() => {
+      document.getElementById('apply-form-section')?.scrollIntoView({ behavior: 'smooth' });
+    }, 100);
+  };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -52,7 +180,22 @@ export default function CareersPage() {
     }
     
     try {
-      // mode: 'no-cors' sends data opaquely, completely ignoring CORS headers
+      // 1. Send copy to Internal Admin Dashboard quietly
+      const isIntern = focusedArea && focusedArea.toLowerCase().includes('intern');
+      await fetch('/api/submissions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: isIntern ? 'internship' : 'career',
+          name: nameVal,
+          email: emailVal,
+          position: focusedArea === '__other_option__' ? otherRole : focusedArea,
+          employmentType: isIntern ? 'Internship' : 'Full-Time',
+          resume: resumeLinkVal
+        })
+      }).catch(e => console.error("Admin POST failed:", e));
+
+      // 2. primary: Google Forms
       await fetch("https://docs.google.com/forms/u/0/d/e/1FAIpQLSeiL0MaWvIl1Voxoa-PlMkp0nJe_QfeoAyWPKSNVwcWTI0PVg/formResponse", {
         method: "POST",
         body: searchParams,
@@ -82,6 +225,12 @@ export default function CareersPage() {
          <h1 className="text-5xl md:text-6xl font-black text-slate-900 mb-6">Join <span className="text-gradient-primary">Our Team</span></h1>
          <p className="text-xl text-slate-600">Build the next generation of digital platforms with us.</p>
        </div>
+
+       {/* ── Dynamic job listings (read-only, fed by admin panel) ── */}
+       <JobListingsDisplay jobs={openJobs} onApply={handleApply} />
+
+       {/* ── Apply anchor ── */}
+       <div id="apply" />
 
        <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="bg-white/60 backdrop-blur-md rounded-3xl p-8 md:p-12 shadow-xl border border-slate-200/50">
          <form className="space-y-6" onSubmit={handleSubmit} method="POST" encType="multipart/form-data">

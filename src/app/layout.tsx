@@ -1,11 +1,8 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import Script from "next/script";
-import { ScrollToTop } from "@/components/ui/ScrollToTop";
-import { Navbar } from '@/components/layout/Navbar';
-import { GlobalBackground } from '@/components/layout/GlobalBackground';
-import { Footer } from '@/components/layout/Footer';
 import { AnalyticsTracker } from '@/components/analytics/AnalyticsTracker';
+import { ConditionalShell } from '@/components/layout/ConditionalShell';
 import { GA_TRACKING_ID } from '@/lib/gtag';
 import "./globals.css";
 
@@ -56,13 +53,9 @@ export default function RootLayout({
 
       <body className="min-h-screen bg-background text-foreground flex flex-col relative" suppressHydrationWarning>
         <AnalyticsTracker />
-        <GlobalBackground />
-        <Navbar />
-        <main className="flex-grow relative z-10 w-full overflow-x-hidden pt-24">
+        <ConditionalShell>
           {children}
-        </main>
-        <Footer />
-        <ScrollToTop />
+        </ConditionalShell>
       </body>
     </html>
   );
