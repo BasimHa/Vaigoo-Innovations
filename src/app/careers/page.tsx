@@ -7,12 +7,12 @@ import { fadeUp, staggerContainer } from '@/components/animations/variants';
 import { CustomSelect, Option } from '@/components/ui/CustomSelect';
 
 const departmentOptions: Option[] = [
-  { value: "Frontend engineering", label: "Frontend Engineering", description: "React, Next.js, Framer Motion", icon: <Code size={20} /> },
+  { value: "Frontend Engineering", label: "Frontend Engineering", description: "React, Next.js, Framer Motion", icon: <Code size={20} /> },
   { value: "Backend Engineering", label: "Backend Engineering", description: "Node.js, Python, Databases", icon: <Database size={20} /> },
-  { value: "Ai/ML", label: "AI / Machine Learning", description: "LLMs, Data Pipelines, AI Agents", icon: <BrainCircuit size={20} /> },
-  { value: "UI/UX designing", label: "UI/UX Design", description: "Figma, User Research, Prototyping", icon: <PenTool size={20} /> },
-  { value: "Growth and Marketing", label: "Growth & Marketing", description: "SEO, Campaigns, Analytics", icon: <TrendingUp size={20} /> },
-  { value: "Other", label: "Other / General", description: "Sales, Operations, General", icon: <Presentation size={20} /> },
+  { value: "AI / Machine Learning", label: "AI / Machine Learning", description: "LLMs, Data Pipelines, AI Agents", icon: <BrainCircuit size={20} /> },
+  { value: "UI/UX Design", label: "UI/UX Design", description: "Figma, User Research, Prototyping", icon: <PenTool size={20} /> },
+  { value: "Growth & Marketing", label: "Growth & Marketing", description: "SEO, Campaigns, Analytics", icon: <TrendingUp size={20} /> },
+  { value: "Other / General", label: "Other / General", description: "Sales, Operations, General", icon: <Presentation size={20} /> },
 ];
 
 export default function CareersPage() {
