@@ -7,10 +7,10 @@ import { fadeUp, staggerContainer } from '@/components/animations/variants';
 import { CustomSelect, Option } from '@/components/ui/CustomSelect';
 
 const departmentOptions: Option[] = [
-  { value: "Frontend engineering", label: "Frontend Engineering", description: "React, Next.js, Framer Motion", icon: <Code size={20} /> },
-  { value: "Backend Engineering", label: "Backend Engineering", description: "Node.js, Python, Databases", icon: <Database size={20} /> },
-  { value: "Ai/ML", label: "AI / Machine Learning", description: "LLMs, Data Pipelines, AI Agents", icon: <BrainCircuit size={20} /> },
-  { value: "UI/UX designing", label: "UI/UX Design", description: "Figma, User Research, Prototyping", icon: <PenTool size={20} /> },
+  { value: "Frontend", label: "Frontend Engineering", description: "React, Next.js, Framer Motion", icon: <Code size={20} /> },
+  { value: "Backend", label: "Backend Engineering", description: "Node.js, Python, Databases", icon: <Database size={20} /> },
+  { value: "AI/ML", label: "AI / Machine Learning", description: "LLMs, Data Pipelines, AI Agents", icon: <BrainCircuit size={20} /> },
+  { value: "UI/UX", label: "UI/UX Design", description: "Figma, User Research, Prototyping", icon: <PenTool size={20} /> },
   { value: "Growth and Marketing", label: "Growth & Marketing", description: "SEO, Campaigns, Analytics", icon: <TrendingUp size={20} /> },
   { value: "__other_option__", label: "Other / General", description: "Sales, Operations, General", icon: <Presentation size={20} /> },
 ];
@@ -35,25 +35,25 @@ export default function CareersPage() {
     
     // Convert to Google Form entry IDs safely
     const nameVal = nativeData.get("name");
-    if (nameVal) searchParams.append("entry.1282054239", nameVal as string);
+    if (nameVal) searchParams.append("entry.1499950111", nameVal as string);
     
     const emailVal = nativeData.get("email");
-    if (emailVal) searchParams.append("entry.965589471", emailVal as string);
+    if (emailVal) searchParams.append("entry.1995264925", emailVal as string);
     if (focusedArea) {
-      searchParams.append("entry.758056272", focusedArea);
+      searchParams.append("entry.1711655405", focusedArea);
       if (focusedArea === "__other_option__") {
-        searchParams.append("entry.758056272.other_option_response", otherRole || "Not specified");
+        searchParams.append("entry.1711655405.other_option_response", otherRole || "Not specified");
       }
     }
     // Resume Link Extraction mapped strictly to the new Short Answer Google Form field
     const resumeLinkVal = nativeData.get("resumeLink");
     if (resumeLinkVal) {
-      searchParams.append("entry.46420921", resumeLinkVal as string);
+      searchParams.append("entry.101418272", resumeLinkVal as string);
     }
     
     try {
       // mode: 'no-cors' sends data opaquely, completely ignoring CORS headers
-      await fetch("https://docs.google.com/forms/u/0/d/e/1FAIpQLSdyobGAMFFyyxjQ3oPkc20FiU7dHWLU5W7fHLfd3fbb9Zmprg/formResponse", {
+      await fetch("https://docs.google.com/forms/u/0/d/e/1FAIpQLSeiL0MaWvIl1Voxoa-PlMkp0nJe_QfeoAyWPKSNVwcWTI0PVg/formResponse", {
         method: "POST",
         body: searchParams,
         headers: {

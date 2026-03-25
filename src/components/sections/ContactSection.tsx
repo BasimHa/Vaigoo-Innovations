@@ -25,21 +25,21 @@ export const ContactSection = () => {
     
     // Google Form mapping logic
     const nameVal = nativeData.get("name");
-    if (nameVal) searchParams.append("entry.399279721", nameVal as string);
+    if (nameVal) searchParams.append("entry.1181522634", nameVal as string);
     
     const emailVal = nativeData.get("email");
-    if (emailVal) searchParams.append("entry.542220525", emailVal as string);
+    if (emailVal) searchParams.append("entry.179018669", emailVal as string);
     
     const messageVal = nativeData.get("message");
-    if (messageVal) searchParams.append("entry.1273072826", messageVal as string);
+    if (messageVal) searchParams.append("entry.523101576", messageVal as string);
     
     // Wire the natively validated Phone Number string directly
     if (phoneNumber) {
-      searchParams.append("entry.379468660", `${selectedCountry.code} ${phoneNumber}`);
+      searchParams.append("entry.1731605438", `${selectedCountry.code} ${phoneNumber}`);
     }
     
     try {
-      await fetch("https://docs.google.com/forms/u/0/d/e/1FAIpQLSd_j5Jr4us9aYaQ47tRCY4PPg3vqDDwxSii8tDt-ABMc-uuNw/formResponse", {
+      await fetch("https://docs.google.com/forms/u/0/d/e/1FAIpQLSdCBrMfuGPfUqmaZFwgUnLhpXlba5hhYWyXH0M_anLmQPSXAQ/formResponse", {
         method: "POST",
         body: searchParams,
         headers: {
