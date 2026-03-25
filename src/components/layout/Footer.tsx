@@ -92,9 +92,9 @@ export const Footer = () => {
         <div className="border-t border-slate-200/60 pt-8 flex flex-col md:flex-row justify-between items-center text-sm text-slate-500">
           <p className="mb-4 md:mb-0">© {new Date().getFullYear()} Vaigoo Innovations. All rights reserved.</p>
           <div className="flex space-x-6 font-medium">
-            <button onClick={() => router.push("#")} className="appearance-none bg-transparent border-none p-0 cursor-pointer hover:text-primary-blue transition-colors">Privacy Policy</button>
-            <button onClick={() => router.push("#")} className="appearance-none bg-transparent border-none p-0 cursor-pointer hover:text-primary-blue transition-colors">Terms of Service</button>
-            <button onClick={() => router.push("#")} className="appearance-none bg-transparent border-none p-0 cursor-pointer hover:text-primary-blue transition-colors">Cookie Policy</button>
+            <button onClick={() => router.push("/privacy-policy")} className="appearance-none bg-transparent border-none p-0 cursor-pointer hover:text-primary-blue transition-colors">Privacy Policy</button>
+            <button onClick={() => router.push("/terms-of-service")} className="appearance-none bg-transparent border-none p-0 cursor-pointer hover:text-primary-blue transition-colors">Terms of Service</button>
+            <button onClick={() => router.push("/cookie-policy")} className="appearance-none bg-transparent border-none p-0 cursor-pointer hover:text-primary-blue transition-colors">Cookie Policy</button>
           </div>
         </div>
       </div>
