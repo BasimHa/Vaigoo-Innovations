@@ -26,13 +26,13 @@ export const Footer = () => {
               We are a next-generation digital solutions technology company. We specialize in building intelligent systems, AI-driven applications, and scalable platforms that empower modern businesses to reach their highest potential.
             </p>
             <div className="flex space-x-4">
-              <a href="#" className="w-10 h-10 rounded-full bg-white/50 border border-slate-200 shadow-sm flex items-center justify-center text-slate-600 hover:text-primary-blue transition-all duration-300 hover:scale-110">
+              <a href="https://vaigoo-innovations.vercel.app" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-white/50 border border-slate-200 shadow-sm flex items-center justify-center text-slate-600 hover:text-primary-blue transition-all duration-300 hover:scale-110">
                 <Globe size={20} />
               </a>
-              <a href="#" className="w-10 h-10 rounded-full bg-white/50 border border-slate-200 shadow-sm flex items-center justify-center text-slate-600 hover:text-primary-blue transition-all duration-300 hover:scale-110">
+              <a href="https://wa.me/9037049531" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-white/50 border border-slate-200 shadow-sm flex items-center justify-center text-slate-600 hover:text-primary-blue transition-all duration-300 hover:scale-110">
                 <MessageCircle size={20} />
               </a>
-              <a href="#" className="w-10 h-10 rounded-full bg-white/50 border border-slate-200 shadow-sm flex items-center justify-center text-slate-600 hover:text-primary-blue transition-all duration-300 hover:scale-110">
+              <a href="mailto:vaigooinnovations@gmail.com" className="w-10 h-10 rounded-full bg-white/50 border border-slate-200 shadow-sm flex items-center justify-center text-slate-600 hover:text-primary-blue transition-all duration-300 hover:scale-110">
                 <Mail size={20} />
               </a>
             </div>
