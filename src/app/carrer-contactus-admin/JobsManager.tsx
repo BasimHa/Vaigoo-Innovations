@@ -226,7 +226,8 @@ export default function JobsManager({ password }: { password: string }) {
             </tbody>
           </table>
         </div>
-      )}
+      </div>
+    )}
 
       <AnimatePresence>
         {showModal && <JobFormModal initial={editingJob} onSave={handleSave} onClose={() => setShowModal(false)} />}

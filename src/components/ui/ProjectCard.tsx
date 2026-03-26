@@ -43,7 +43,7 @@ export const ProjectCard = ({ title, imageSrc, href, iframeSrc }: ProjectCardPro
       target={href ? "_blank" : undefined}
       rel={href ? "noopener noreferrer" : undefined}
       variants={fadeUp}
-      className={`group relative rounded-[20px] overflow-hidden cursor-pointer shadow-[0_10px_30px_rgba(0,0,0,0.1)] hover:-translate-y-2 hover:shadow-[0_20px_50px_rgba(0,0,0,0.15)] transition-all duration-300 ease-in-out block aspect-[4/5] sm:aspect-[4/5] lg:aspect-[9/16] bg-slate-900 border border-slate-200/60 isolate`}
+      className={`group relative rounded-[20px] overflow-hidden cursor-pointer shadow-[0_10px_30px_rgba(0,0,0,0.1)] hover:-translate-y-2 hover:shadow-[0_20px_50px_rgba(0,0,0,0.15)] transition-all duration-300 ease-in-out block aspect-[4/5] sm:aspect-[4/5] lg:aspect-[4/5] bg-slate-900 border border-slate-200/60 isolate`}
     >
       <div className="absolute inset-0 w-full h-full bg-slate-100 overflow-hidden group-hover:scale-105 transition-transform duration-700 ease-out">
         {iframeSrc && !hasError ? (

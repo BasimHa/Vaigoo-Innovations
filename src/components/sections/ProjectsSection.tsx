@@ -6,6 +6,14 @@ import { fadeUp, staggerContainer } from '../animations/variants';
 
 const projects = [
   {
+    title: "TapNOrder",
+    category: "SaaS Restaurant Solution",
+    description: "Contactless QR & NFC ordering system with integrated POS to save time and reduce errors.",
+    href: "https://tapnorder.co.in/",
+    imageSrc: "/Images/tapnorder.png",
+    iframeSrc: "https://tapnorder.co.in/"
+  },
+  {
     title: "Seeheim Resorts",
     category: "Hospitality Web Platform",
     description: "Premium online booking and presentation platform.",
@@ -32,21 +40,13 @@ const projects = [
     description: "Dynamic outdoor advertising network portal and business site.",
     href: "https://aiswariaooh.com/",
     imageSrc: "https://s0.wp.com/mshots/v1/https://aiswariaooh.com?w=1200&h=1800"
-  },
-  {
-    title: "Tap & Order",
-    category: "Restaurant POS Solutions",
-    description: "Comprehensive Restaurant POS software for order management and analytics.",
-    href: "https://tapnorder.co.in/",
-    imageSrc: "/Images/tap-and-order.png",
-    iframeSrc: "https://www.tapnorder.co.in/"
   }
 ];
 
 export const ProjectsSection = () => {
   return (
     <section id="projects" className="py-24 relative flex justify-center w-full">
-      <div className="max-w-[90rem] mx-auto px-4 sm:px-6 lg:px-8 w-full">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
         <motion.div 
           initial="hidden"
           whileInView="visible"
@@ -70,7 +70,7 @@ export const ProjectsSection = () => {
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: "-100px" }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-[repeat(auto-fit,minmax(280px,1fr))] gap-5 md:gap-5"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-12 font-medium"
         >
           {projects.map((project, idx) => (
             <ProjectCard 
