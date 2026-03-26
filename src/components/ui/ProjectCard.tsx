@@ -48,11 +48,7 @@ export const ProjectCard = ({ title, imageSrc, href, iframeSrc }: ProjectCardPro
       <div className="absolute inset-0 w-full h-full bg-slate-100 overflow-hidden group-hover:scale-105 transition-transform duration-700 ease-out">
         {iframeSrc && !hasError ? (
           <div className="relative w-full h-full">
-            {/* Live Preview Badge */}
-            <div className="absolute top-4 right-4 z-20 flex items-center gap-2 bg-black/60 backdrop-blur-md rounded-full px-3 py-1.5 border border-white/10">
-              <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-              <span className="text-white text-[10px] sm:text-[11px] font-medium tracking-wide">Live Preview</span>
-            </div>
+
 
             {/* Shimmer Loader */}
             {!iframeLoaded && (
