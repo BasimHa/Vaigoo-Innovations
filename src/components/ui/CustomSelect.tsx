@@ -16,9 +16,11 @@ interface CustomSelectProps {
   value: string;
   onChange: (val: string) => void;
   placeholder?: string;
+  name?: string;
+  required?: boolean;
 }
 
-export const CustomSelect = ({ options, value, onChange, placeholder = "Select an option" }: CustomSelectProps) => {
+export const CustomSelect = ({ options, value, onChange, placeholder = "Select an option", name = "focusedArea", required = false }: CustomSelectProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -37,7 +39,7 @@ export const CustomSelect = ({ options, value, onChange, placeholder = "Select a
   return (
     <div className="relative w-full" ref={containerRef}>
       {/* Hidden input to ensure it works with native HTML form submission if needed */}
-      <input type="hidden" name="focusedArea" value={value} required />
+      <input type="hidden" name={name} value={value} required={required} />
       
       <button 
         type="button"

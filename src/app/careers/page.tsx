@@ -16,6 +16,13 @@ const departmentOptions: Option[] = [
   { value: "__other_option__", label: "Other / General", description: "Sales, Operations, General", icon: <Presentation size={20} /> },
 ];
 
+const internshipOptions: Option[] = [
+  { value: "Internship 6 Months Paid", label: "Internship 6 Months Paid", description: "Paid program for 6 months.", icon: <Briefcase size={20} /> },
+  { value: "Internship 6 Months Free", label: "Internship 6 Months Free", description: "Unpaid / skill training for 6 months.", icon: <Briefcase size={20} /> },
+  { value: "Internship 12 Months Paid", label: "Internship 12 Months Paid", description: "Long-term paid program.", icon: <Briefcase size={20} /> },
+  { value: "Internship 12 Months Free", label: "Internship 12 Months Free", description: "Long-term unpaid program.", icon: <Briefcase size={20} /> },
+];
+
 // ─── Job listing badge helpers ───────────────────────────────────────────────
 
 function EmploymentBadge({ type }: { type: string }) {
@@ -122,6 +129,7 @@ function JobListingsDisplay({ jobs, onApply }: { jobs: JobListing[], onApply: (j
 export default function CareersPage() {
   const [openJobs, setOpenJobs] = useState<JobListing[]>([]);
   const [focusedArea, setFocusedArea] = useState<string>('');
+  const [internshipType, setInternshipType] = useState<string>('');
   const [otherRole, setOtherRole] = useState<string>('');
   const [fileName, setFileName] = useState<string | null>(null);
   const [result, setResult] = useState("Submit Application");
@@ -165,7 +173,14 @@ export default function CareersPage() {
     const nameVal = nativeData.get("name");
     const emailVal = nativeData.get("email");
     const resumeLinkVal = nativeData.get("resumeLink");
+    const focusedAreaVal = nativeData.get("focusedArea");
     const internshipTypeVal = nativeData.get("internshipType"); // New field
+
+    if (!focusedAreaVal && !internshipTypeVal) {
+      alert("Please select either a Focused Area or an Internship Type.");
+      setResult("Submit Application");
+      return;
+    }
 
     try {
       // Send to Unified Submission API (Handles Google Sheets & Email Automation)
@@ -189,6 +204,7 @@ export default function CareersPage() {
       setShowSuccessModal(true);
       formElement.reset();  
       setFocusedArea('');
+      setInternshipType('');
       setOtherRole('');
       setFileName(null);
       
@@ -234,7 +250,9 @@ export default function CareersPage() {
                options={departmentOptions}
                value={focusedArea}
                onChange={setFocusedArea}
-               placeholder="Select your area of expertise"
+               placeholder="Select Area (Optional if applying for Internship)"
+               name="focusedArea"
+               required={false}
              />
            </motion.div>
 
@@ -264,16 +282,14 @@ export default function CareersPage() {
 
             <motion.div variants={fadeUp}>
               <label className="block text-sm font-medium text-slate-700 mb-2">Internship Type (If applying for Internship)</label>
-              <select 
-                name="internshipType" 
-                className="w-full px-4 py-3.5 rounded-xl bg-white/80 backdrop-blur-sm border border-slate-200/80 focus:outline-none focus:ring-2 focus:ring-primary-blue/50 focus:border-primary-blue transition-all duration-300 shadow-sm text-slate-900"
-              >
-                <option value="">Select Internship Type (Optional)</option>
-                <option value="Internship 6 Months Paid">Internship 6 Months Paid</option>
-                <option value="Internship 6 Months Free">Internship 6 Months Free</option>
-                <option value="Internship 12 Months Paid">Internship 12 Months Paid</option>
-                <option value="Internship 12 Months Free">Internship 12 Months Free</option>
-              </select>
+              <CustomSelect 
+                options={internshipOptions}
+                value={internshipType}
+                onChange={setInternshipType}
+                placeholder="Select Internship Type (Optional if applying for Career)"
+                name="internshipType"
+                required={false}
+              />
             </motion.div>
 
            <motion.div variants={fadeUp}>

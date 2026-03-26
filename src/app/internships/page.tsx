@@ -3,11 +3,21 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle2, X } from 'lucide-react';
+import { CustomSelect, Option } from '@/components/ui/CustomSelect';
 import { fadeUp, staggerContainer } from '@/components/animations/variants';
+import { Briefcase } from 'lucide-react';
+
+const internshipOptions: Option[] = [
+  { value: "Internship 6 Months Paid", label: "Internship 6 Months Paid", description: "Paid program for 6 months.", icon: <Briefcase size={20} /> },
+  { value: "Internship 6 Months Free", label: "Internship 6 Months Free", description: "Unpaid / skill training for 6 months.", icon: <Briefcase size={20} /> },
+  { value: "Internship 12 Months Paid", label: "Internship 12 Months Paid", description: "Long-term paid program.", icon: <Briefcase size={20} /> },
+  { value: "Internship 12 Months Free", label: "Internship 12 Months Free", description: "Long-term unpaid program.", icon: <Briefcase size={20} /> },
+];
 
 export default function InternshipPage() {
   const [result, setResult] = useState("Submit Application");
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [internshipType, setInternshipType] = useState<string>('');
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -43,6 +53,7 @@ export default function InternshipPage() {
       setResult("Submit Application");
       setShowSuccessModal(true);
       formElement.reset();
+      setInternshipType('');
     } catch (err: any) {
       console.error("Network Fetch Error:", err);
       setResult("Failed. Try again.");
@@ -86,12 +97,14 @@ export default function InternshipPage() {
 
            <motion.div variants={fadeUp}>
              <label className="block text-sm font-medium text-slate-700 mb-2">Internship Type</label>
-             <select name="internshipType" required className="w-full px-4 py-3.5 rounded-xl bg-white/80 backdrop-blur-sm border border-slate-200/80 focus:outline-none focus:ring-2 focus:ring-primary-blue/50 focus:border-primary-blue transition-all duration-300 shadow-sm text-slate-900">
-               <option value="Internship 6 Months Paid">Internship 6 Months Paid</option>
-               <option value="Internship 6 Months Free">Internship 6 Months Free</option>
-               <option value="Internship 12 Months Paid">Internship 12 Months Paid</option>
-               <option value="Internship 12 Months Free">Internship 12 Months Free</option>
-             </select>
+             <CustomSelect 
+               options={internshipOptions}
+               value={internshipType}
+               onChange={setInternshipType}
+               placeholder="Select Internship Type"
+               name="internshipType"
+               required={true}
+             />
            </motion.div>
 
            <motion.div variants={fadeUp}>
