@@ -52,12 +52,12 @@ export const Navbar = () => {
           </Link>
 
           {/* Desktop Nav */}
-          <div className="hidden lg:flex items-center space-x-8">
+          <div className="hidden lg:flex items-center gap-6 xl:gap-8">
             {navLinks.map((link, idx) => (
               <motion.div key={link.name} initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.1 }}>
                 <Link
                   href={link.href}
-                  className={`text-sm font-medium transition-colors hover:text-primary-blue ${
+                  className={`text-sm font-semibold transition-colors hover:text-primary-blue ${
                     pathname === link.href ? 'text-primary-blue' : 'text-slate-600'
                   }`}
                 >
@@ -66,9 +66,10 @@ export const Navbar = () => {
               </motion.div>
             ))}
             <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.4 }}>
-              <Button href={pathname === '/' ? '#contact' : '/#contact'} variant="primary">Start a Project</Button>
+              <Button href={pathname === '/' ? '#contact' : '/#contact'} variant="primary" className="shadow-lg shadow-primary-blue/20">Start a Project</Button>
             </motion.div>
           </div>
+
 
           {/* Mobile Menu Button */}
           <div className="lg:hidden">

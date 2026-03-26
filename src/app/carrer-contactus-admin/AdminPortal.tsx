@@ -279,54 +279,73 @@ export default function AdminPortal() {
           )}
         </div>
         )}
-      </main>
-
-      {/* Detail Modal Layer */}
-      <AnimatePresence>
+      </main>      {/* Detail Modal Layer */}
+      <AnimatePresence mode="wait">
         {selectedSub && (
-          <div className="fixed inset-0 z-[9999] flex items-stretch justify-end p-0 isolate pointer-events-none">
+          <div className="fixed inset-0 z-[99999] flex items-stretch md:items-center justify-end md:p-6 isolate pointer-events-none">
+            {/* Backdrop with Fade */}
             <motion.div 
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-black/40 backdrop-blur-sm pointer-events-auto"
+              initial={{ opacity: 0 }} 
+              animate={{ opacity: 1 }} 
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-slate-900/60 backdrop-blur-md pointer-events-auto"
               onClick={() => setSelectedSub(null)}
             />
+            
+            {/* Side Panel Modal */}
             <motion.div 
-              initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }}
-              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="relative bg-white w-full sm:w-[450px] h-[100dvh] shadow-2xl flex flex-col z-50 overflow-hidden border-l border-slate-100 pointer-events-auto"
+              initial={{ x: '100%', opacity: 0 }} 
+              animate={{ x: 0, opacity: 1 }} 
+              exit={{ x: '100%', opacity: 0 }}
+              transition={{ type: 'spring', damping: 30, stiffness: 250 }}
+              className="relative bg-white w-full sm:w-[500px] h-[100dvh] md:h-auto md:max-h-[85vh] md:rounded-[32px] shadow-2xl flex flex-col z-[100000] overflow-hidden border-l md:border border-slate-100 pointer-events-auto"
             >
-              <div className="p-6 md:p-8 bg-slate-50/95 backdrop-blur-md border-b border-slate-200 flex items-start justify-between sticky top-0 z-[60]">
-                <div>
-                  <div className="flex items-center gap-3 mb-3">
-                     <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wider ${selectedSub.type === 'contact' ? 'bg-purple-100 text-purple-700' : selectedSub.type === 'career' ? 'bg-blue-100 text-blue-700' : 'bg-emerald-100 text-emerald-700'}`}>
+              {/* Responsive Header */}
+              <div className="p-6 md:p-8 bg-white/80 backdrop-blur-xl border-b border-slate-100 flex items-start justify-between sticky top-0 z-[110]">
+                <div className="space-y-2 truncate flex-1 pr-4">
+                  <div className="flex flex-wrap items-center gap-2">
+                     <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-widest ${selectedSub.type === 'contact' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}`}>
                         {selectedSub.type}
                      </span>
-                     <span className="text-xs text-slate-400 font-medium">{new Date(selectedSub.createdAt).toLocaleString()}</span>
+                     <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider tabular-nums">
+                       {new Date(selectedSub.createdAt).toLocaleString()}
+                     </span>
                   </div>
-                  <h2 className="text-2xl font-bold text-slate-900">{selectedSub.name}</h2>
+                  <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900 leading-tight truncate">{selectedSub.name}</h2>
                 </div>
-                <button onClick={() => setSelectedSub(null)} className="p-2.5 bg-white shadow-md border border-slate-200 text-slate-700 rounded-full hover:bg-slate-100 hover:text-red-500 transition-colors">
-                  <XCircle size={24} />
+                
+                {/* Robust Close Button */}
+                <button 
+                  onClick={() => setSelectedSub(null)} 
+                  className="w-12 h-12 flex items-center justify-center bg-slate-50 text-slate-900 hover:bg-slate-100 hover:text-red-500 rounded-full shadow-sm hover:shadow-md transition-all active:scale-90"
+                  aria-label="Close"
+                >
+                  <XCircle size={32} strokeWidth={1.5} />
                 </button>
               </div>
 
               <div className="p-6 md:p-8 overflow-y-auto flex-1 space-y-8 scrollbar-hide">
+                {/* Contact Section */}
                 <section>
-                  <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Contact Details</h4>
-                  <div className="space-y-3">
-                    <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 flex items-center gap-4">
-                      <Mail size={18} className="text-slate-400" />
+                  <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">Contact Profile</h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="group bg-slate-50 p-4 rounded-2xl border border-slate-100/50 hover:border-primary-blue/30 transition-colors flex items-center gap-4">
+                      <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm text-slate-400 group-hover:text-primary-blue">
+                         <Mail size={18} />
+                      </div>
                       <div className="overflow-hidden">
-                        <p className="text-xs text-slate-500 font-medium">Email Address</p>
-                        <a href={`mailto:${selectedSub.email}`} className="text-slate-900 font-bold truncate block hover:text-primary-blue">{selectedSub.email}</a>
+                        <p className="text-[10px] text-slate-400 font-bold uppercase">Email</p>
+                        <a href={`mailto:${selectedSub.email}`} className="text-sm text-slate-900 font-extrabold truncate block hover:underline">{selectedSub.email}</a>
                       </div>
                     </div>
                     {selectedSub.phone && (
-                       <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 flex items-center gap-4">
-                          <p className="text-slate-400 font-bold">#</p>
+                       <div className="group bg-slate-50 p-4 rounded-2xl border border-slate-100/50 hover:border-primary-blue/30 transition-colors flex items-center gap-4">
+                          <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm text-slate-400 group-hover:text-primary-blue text-sm font-black">
+                             #
+                          </div>
                          <div className="overflow-hidden">
-                           <p className="text-xs text-slate-500 font-medium">Phone Number</p>
-                           <a href={`tel:${selectedSub.phone}`} className="text-slate-900 font-bold truncate block hover:text-primary-blue">{selectedSub.phone}</a>
+                           <p className="text-[10px] text-slate-400 font-bold uppercase">Phone</p>
+                           <a href={`tel:${selectedSub.phone}`} className="text-sm text-slate-900 font-extrabold truncate block hover:underline">{selectedSub.phone}</a>
                          </div>
                        </div>
                     )}
@@ -334,73 +353,53 @@ export default function AdminPortal() {
                 </section>
 
                 <section>
-                  <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Content Context</h4>
-                  
+                  <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">Message / Application</h4>
                   <div className="space-y-4">
-                    {selectedSub.type === 'contact' ? (
-                      <div className="bg-blue-50/50 p-5 rounded-2xl border border-blue-100/50 text-slate-700 text-sm leading-relaxed whitespace-pre-wrap font-medium">
-                        {selectedSub.message || 'No message left.'}
-                      </div>
-                    ) : (
-                      <>
-                        <div className="bg-slate-50 p-5 rounded-2xl border border-slate-100">
-                           <p className="text-xs text-slate-500 font-medium mb-1">Target Position / Domain</p>
-                           <p className="font-bold text-slate-900 text-lg">{selectedSub.position || selectedSub.domain || 'General Inquiry'}</p>
-                        </div>
-                        
-                        <div className="grid grid-cols-2 gap-4">
-                          {selectedSub.employmentType && (
-                            <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                              <p className="text-xs text-slate-500 font-medium mb-1">Emp Type</p>
-                              <p className="font-bold text-slate-900 text-sm">{selectedSub.employmentType}</p>
-                            </div>
-                          )}
-                          {selectedSub.internshipType && (
-                             <div className="bg-amber-50 p-4 rounded-2xl border border-amber-100">
-                               <p className="text-xs text-amber-600/70 font-medium mb-1">Structure</p>
-                               <p className="font-bold text-amber-900 text-xs">{selectedSub.internshipType}</p>
-                             </div>
-                          )}
-                          {selectedSub.duration && (
-                             <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                               <p className="text-xs text-slate-500 font-medium mb-1">Duration</p>
-                               <p className="font-bold text-slate-900 text-sm">{selectedSub.duration}</p>
-                             </div>
-                          )}
-                        </div>
-                      </>
+                    {/* Position/Header Context */}
+                    {(selectedSub.position || selectedSub.domain) && (
+                       <div className="bg-slate-900 p-5 rounded-2xl text-white shadow-xl shadow-slate-900/10 mb-4">
+                          <p className="text-[10px] text-slate-400 font-bold uppercase mb-1">Applying for</p>
+                          <p className="font-extrabold text-lg md:text-xl leading-tight">{selectedSub.position || selectedSub.domain}</p>
+                       </div>
                     )}
+                    
+                    <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100 text-slate-700 text-base leading-relaxed whitespace-pre-wrap font-medium">
+                      {selectedSub.message || 'No additional message provided.'}
+                    </div>
+
+                    {/* Metadata Grid */}
+                    <div className="grid grid-cols-2 gap-3">
+                         {selectedSub.internshipType && (
+                           <div className="bg-amber-50 p-4 rounded-xl border border-amber-100">
+                             <p className="text-[9px] text-amber-600 font-black uppercase mb-1 tracking-wider">Internship</p>
+                             <p className="font-bold text-amber-900 text-[11px] leading-tight">{selectedSub.internshipType}</p>
+                           </div>
+                         )}
+                         {selectedSub.duration && (
+                           <div className="bg-indigo-50 p-4 rounded-xl border border-indigo-100">
+                             <p className="text-[9px] text-indigo-600 font-black uppercase mb-1 tracking-wider">Duration</p>
+                             <p className="font-bold text-indigo-900 text-[11px] leading-tight">{selectedSub.duration}</p>
+                           </div>
+                         )}
+                    </div>
 
                     {selectedSub.resume && (
-                      <a href={selectedSub.resume} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 w-full py-4 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800 transition shadow-lg">
-                        <Download size={18} /> View Portfolio / Resume
+                      <a href={selectedSub.resume} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-3 w-full py-4.5 bg-slate-900 text-white rounded-2xl font-black hover:bg-slate-800 transition-all shadow-lg active:scale-95 text-sm uppercase tracking-widest">
+                        <Download size={18} /> View Resume Portfolio
                       </a>
-                    )}
-
-                    {selectedSub.interviewDate && (
-                      <div className="bg-emerald-50 p-5 rounded-2xl border border-emerald-100">
-                         <p className="text-xs text-emerald-600 font-bold uppercase tracking-wider mb-2">Interview Scheduled</p>
-                         <div className="flex items-center gap-3 text-emerald-900 font-bold">
-                           <Calendar size={18} /> {selectedSub.interviewDate}
-                         </div>
-                         {selectedSub.meetLink && (
-                           <a href={selectedSub.meetLink} target="_blank" className="mt-3 flex items-center gap-2 text-primary-blue text-sm font-bold hover:underline">
-                             <Video size={16} /> Join Google Meet
-                           </a>
-                         )}
-                      </div>
                     )}
                   </div>
                 </section>
 
-                <section className="pt-6 pb-6 border-t border-slate-100">
-                  <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Pipeline Status</h4>
+                {/* Status Selection */}
+                <section className="pt-6 border-t border-slate-100 pb-12">
+                  <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-5">Decision Pipeline</h4>
                   <div className="grid grid-cols-2 gap-3">
                     {['Pending', 'Reviewed', 'Shortlisted', 'Rejected'].map(st => (
                       <button
                         key={st}
                         onClick={() => updateStatus(selectedSub.id, st)}
-                        className={`px-4 py-3 rounded-xl text-xs font-bold transition-all border-2 ${selectedSub.status === st ? 'bg-primary-blue text-white border-primary-blue' : 'bg-white text-slate-700 border-slate-200 hover:border-slate-300'}`}
+                        className={`px-4 py-4 rounded-2xl text-[11px] font-black uppercase tracking-wider transition-all border-2 ${selectedSub.status === st ? 'bg-primary-blue text-white border-primary-blue shadow-lg shadow-primary-blue/20' : 'bg-white text-slate-500 border-slate-100 hover:border-slate-300'}`}
                       >
                         {st}
                       </button>
@@ -413,6 +412,7 @@ export default function AdminPortal() {
         )}
       </AnimatePresence>
     </div>
+
   );
 }
 

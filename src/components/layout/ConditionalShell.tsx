@@ -12,12 +12,21 @@ import { ScrollToTop } from '@/components/ui/ScrollToTop';
  */
 export function ConditionalShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const isAdmin = pathname?.startsWith('/careers-admin') || pathname?.startsWith('/carrer-contactus-admin');
+  
+  // Robust check for admin routes (including common typos like 'carrer')
+  const isAdmin = pathname?.includes('/admin') || 
+                  pathname?.includes('/carrer-') || 
+                  pathname?.includes('/career-');
 
   if (isAdmin) {
-    // Admin pages: bare body, no site shell
-    return <>{children}</>;
+    // Admin pages: bare body, no site shell, no extra padding/fixed navs
+    return (
+      <main className="min-h-screen w-full relative">
+        {children}
+      </main>
+    );
   }
+
 
   // Public pages: full site shell
   return (
