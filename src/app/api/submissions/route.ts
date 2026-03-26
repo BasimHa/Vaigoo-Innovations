@@ -65,7 +65,7 @@ export async function POST(req: Request) {
        duration: data.duration,
        paidtype: data.paidType || data.paidtype,
        resume: data.resume,
-       status: 'Pending'
+       status: 'new'
     });
 
     // 2. Proxy to Unified Google Apps Script (Email/Calendar Automation)

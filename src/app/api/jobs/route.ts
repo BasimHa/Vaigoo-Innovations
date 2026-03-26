@@ -32,7 +32,14 @@ export async function GET(req: Request) {
 const authenticateAdmin = (req: Request) => {
   const authHeader = req.headers.get('authorization');
   const envPassword = process.env.ADMIN_PASSWORD || 'admin123';
-  return authHeader === `Bearer ${envPassword}`;
+  const envPasswordExceptCase = process.env.ADMIN_PASSWORD_EXCEPT_CASE || '';
+  const providedToken = authHeader?.replace('Bearer ', '') || '';
+
+  const primaryMatch = authHeader === `Bearer ${envPassword}`;
+  const secondaryMatch = envPasswordExceptCase &&
+    providedToken.toLowerCase() === envPasswordExceptCase.toLowerCase();
+
+  return primaryMatch || secondaryMatch;
 };
 
 // Handle POST to create a new job

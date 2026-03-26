@@ -19,7 +19,7 @@ type Submission = {
   internshipType: string | null; // Added
   paidType: string | null;
   resume: string | null;
-  status: "Pending" | "Reviewed" | "Shortlisted" | "Rejected"; // Updated
+  status: "new" | "reviewed" | "shortlisted" | "rejected"; // Updated
   interviewDate: string | null; // Added
   meetLink: string | null; // Added
   createdAt: string;
@@ -395,15 +395,15 @@ export default function AdminPortal() {
                 <section className="pt-6 border-t border-slate-100 pb-12">
                   <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-5">Decision Pipeline</h4>
                   <div className="grid grid-cols-2 gap-3">
-                    {['Pending', 'Reviewed', 'Shortlisted', 'Rejected'].map(st => (
-                      <button
-                        key={st}
-                        onClick={() => updateStatus(selectedSub.id, st)}
-                        className={`px-4 py-4 rounded-2xl text-[11px] font-black uppercase tracking-wider transition-all border-2 ${selectedSub.status === st ? 'bg-primary-blue text-white border-primary-blue shadow-lg shadow-primary-blue/20' : 'bg-white text-slate-500 border-slate-100 hover:border-slate-300'}`}
-                      >
-                        {st}
-                      </button>
-                    ))}
+                      {['new', 'reviewed', 'shortlisted', 'rejected'].map(st => (
+                        <button
+                          key={st}
+                          onClick={() => updateStatus(selectedSub.id, st)}
+                          className={`px-4 py-4 rounded-2xl text-[11px] font-black uppercase tracking-wider transition-all border-2 ${selectedSub.status === st ? 'bg-primary-blue text-white border-primary-blue shadow-lg shadow-primary-blue/20' : 'bg-white text-slate-500 border-slate-100 hover:border-slate-300'}`}
+                        >
+                          {st === 'new' ? 'Pending' : st}
+                        </button>
+                      ))}
                   </div>
                 </section>
               </div>
@@ -418,10 +418,10 @@ export default function AdminPortal() {
 
 function StatusBadge({ status }: { status: string }) {
   const map: any = {
-    Pending: 'bg-amber-100 text-amber-700',
-    Reviewed: 'bg-blue-100 text-blue-700',
-    Shortlisted: 'bg-emerald-100 text-emerald-700',
-    Rejected: 'bg-rose-100 text-rose-700'
+    new: 'bg-amber-100 text-amber-700',
+    reviewed: 'bg-blue-100 text-blue-700',
+    shortlisted: 'bg-emerald-100 text-emerald-700',
+    rejected: 'bg-rose-100 text-rose-700'
   };
   const cls = map[status] || 'bg-slate-100 text-slate-700';
   return (
