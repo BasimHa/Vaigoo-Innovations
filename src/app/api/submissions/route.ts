@@ -6,19 +6,24 @@ const APPS_SCRIPT_URL = process.env.NEXT_PUBLIC_APPS_SCRIPT_URL || '';
 async function submitToGoogleForm(data: any) {
   try {
     const isCareer = data.type === 'career';
-    const formUrl = isCareer 
+    const isInternship = data.type === 'internship';
+    const formUrl = (isCareer || isInternship)
       ? 'https://docs.google.com/forms/u/0/d/e/1FAIpQLSdC2Z5tERW2sYtjzJN4VP-xCss-aWr1WxaLLqv2gvXCiLwH_Q/formResponse'
       : 'https://docs.google.com/forms/u/0/d/e/1FAIpQLSc37vKm2W-WC47FvzG64RV14UBiM7MGvXXT7OSCdCSCTikgqA/formResponse';
 
     const body = new URLSearchParams();
     
-    if (isCareer) {
+    if (isCareer || isInternship) {
       body.append('entry.1658472497', data.name || '');
       body.append('entry.862200673', data.email || '');
       body.append('entry.435392044', data.phone || '');
-      body.append('entry.153460694', data.position || '');
+      body.append('entry.153460694', data.position || data.domain || '');
       body.append('entry.1608247299', data.resume || '');
-      body.append('entry.1724599138', data.message || '');
+      
+      const messageContent = isInternship 
+        ? `Duration: ${data.duration} | Type: ${data.internshipType} | Details: ${data.message || 'N/A'}`
+        : data.message || '';
+      body.append('entry.1724599138', messageContent);
     } else {
       // Contact Form Mapping
       body.append('entry.1152972438', data.name || '');
@@ -37,6 +42,7 @@ async function submitToGoogleForm(data: any) {
     console.error("[GoogleForm Backup Error]", err);
   }
 }
+
 
 // Handle POST to save an application/contact form
 export async function POST(req: Request) {
