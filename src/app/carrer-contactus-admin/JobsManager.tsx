@@ -56,12 +56,12 @@ function JobFormModal({ initial, onSave, onClose }: { initial?: JobListing; onSa
   const handleSubmit = (e: React.FormEvent) => { e.preventDefault(); onSave(form); };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={onClose} />
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
       <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-white border border-slate-100 rounded-3xl shadow-2xl">
-        <div className="sticky top-0 flex items-center justify-between px-8 py-5 border-b border-slate-100 bg-white/95 backdrop-blur-md z-10 rounded-t-3xl">
+        <div className="sticky top-0 flex items-center justify-between px-8 py-5 border-b border-slate-200 bg-white/95 backdrop-blur-md z-[60] rounded-t-3xl">
           <h2 className="text-lg font-bold text-slate-900">{initial ? 'Edit Job Listing' : 'Create New Job Listing'}</h2>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-900 transition-colors p-1 rounded-lg hover:bg-slate-100"><X size={20} /></button>
+          <button onClick={onClose} className="relative z-[9999] pointer-events-auto text-slate-500 hover:text-red-500 transition-colors p-1.5 rounded-lg hover:bg-slate-100"><X size={24} /></button>
         </div>
         <form onSubmit={handleSubmit} className="p-8 space-y-5">
           <TextField label="Job Title" value={form.title} onChange={(v) => setField('title', v)} placeholder="e.g. Senior Frontend Engineer" required />
@@ -152,28 +152,30 @@ export default function JobsManager({ password }: { password: string }) {
   };
 
   return (
-    <div className="flex-1 bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden flex flex-col min-h-[500px] p-6">
-      <div className="flex items-center justify-between mb-6">
+    <div className="flex-1 bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden flex flex-col min-h-[500px] p-4 sm:p-6 lg:p-8">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
-           <h2 className="text-xl font-bold text-slate-900">Manage Job Listings</h2>
+           <h2 className="text-xl sm:text-2xl font-bold text-slate-900">Manage Job Listings</h2>
            <p className="text-sm text-slate-500 mt-1">Create and track live careers published to the website.</p>
         </div>
-        <button onClick={() => { setEditingJob(undefined); setShowModal(true); }} className="flex items-center gap-2 px-4 py-2 bg-gradient-primary text-white text-sm font-semibold rounded-xl hover:-translate-y-0.5 transition-transform shadow-md">
-          <Plus size={16} /> New Job
+        <button onClick={() => { setEditingJob(undefined); setShowModal(true); }} className="flex items-center justify-center gap-2 px-6 py-3 bg-gradient-primary text-white text-sm font-bold rounded-2xl hover:-translate-y-0.5 transition-all shadow-lg active:scale-95 shrink-0">
+          <Plus size={20} /> New Job
         </button>
       </div>
 
       {loading ? (
         <div className="flex-1 flex items-center justify-center text-slate-400">Loading jobs database...</div>
       ) : jobs.length === 0 ? (
-        <div className="flex-1 flex flex-col items-center justify-center text-slate-500 py-12 border-2 border-dashed border-slate-100 rounded-2xl">
-          <Briefcase size={32} className="text-slate-300 mb-4" />
-          <p className="text-slate-700 font-medium">No active listings</p>
-          <p className="text-sm mt-1">Click New Job to post an opening.</p>
+        <div className="flex-1 flex flex-col items-center justify-center text-slate-500 py-16 border-2 border-dashed border-slate-100 rounded-3xl">
+          <Briefcase size={40} className="text-slate-300 mb-4" />
+          <p className="text-slate-700 font-bold">No active listings</p>
+          <p className="text-sm mt-1">Click "New Job" to post an opening.</p>
         </div>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse min-w-[800px]">
+        <div className="relative group/jobs">
+           <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white to-transparent pointer-events-none z-10 lg:hidden opacity-0 group-hover/jobs:opacity-100 transition-opacity" />
+           <div className="overflow-x-auto scrollbar-thin">
+             <table className="w-full text-left border-collapse min-w-[700px] lg:min-w-[800px]">
             <thead>
               <tr className="bg-slate-50/80 border-b border-slate-200 text-xs uppercase tracking-wider text-slate-500">
                 <th className="px-6 py-4 font-semibold rounded-tl-xl">Job Title</th>

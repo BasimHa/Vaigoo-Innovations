@@ -1,38 +1,7 @@
 import { NextResponse } from 'next/server';
 import { supabaseREST } from '@/lib/supabase';
 
-// Helper to reliably trigger the legacy Google App Script email responder
-async function triggerAutoReply(submission: any) {
-  try {
-    const GOOGLE_FORM_URL = 'https://docs.google.com/forms/u/0/d/e/1FAIpQLSfgCsPnjRsiUQCltIeC0rM2Fa-4IbNgAJZmwoM8tfOm_fYtZg/formResponse';
-    const formBody = new URLSearchParams();
-    
-    // Required fields from the DOM
-    formBody.append('entry.1424804324', submission.name || 'Applicant');
-    formBody.append('entry.1445404356', submission.email || '');
-    
-    // Properly case enum types
-    const typeValue = submission.type ? submission.type.charAt(0).toUpperCase() + submission.type.slice(1) : 'Contact';
-    formBody.append('entry.1712063615', typeValue);
-    
-    const statusValue = submission.status ? submission.status.charAt(0).toUpperCase() + submission.status.slice(1) : 'New';
-    formBody.append('entry.1687234610', statusValue);
-
-    console.log(`[AutoReply] Sending to Google Form — name: ${submission.name}, email: ${submission.email}, type: ${typeValue}, status: ${statusValue}`);
-
-    const res = await fetch(GOOGLE_FORM_URL, {
-      method: 'POST',
-      body: formBody,
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded'
-      }
-    });
-
-    console.log(`[AutoReply] Google Form response status: ${res.status}`);
-  } catch (err) {
-    console.error("[AutoReply] Failed to trigger auto reply form:", err);
-  }
-}
+const APPS_SCRIPT_URL = process.env.NEXT_PUBLIC_APPS_SCRIPT_URL || '';
 
 // Handle POST to save an application/contact form
 export async function POST(req: Request) {
@@ -43,6 +12,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
+    // 1. Save to Supabase (Legacy/Primary)
     const result = await supabaseREST.insert('submissions', {
        type: data.type,
        name: data.name,
@@ -54,20 +24,30 @@ export async function POST(req: Request) {
        duration: data.duration,
        paidtype: data.paidType || data.paidtype,
        resume: data.resume,
-       status: 'new'
+       status: 'Pending' // Standardized initial status
     });
 
-    if (result.error) {
-      return NextResponse.json({ error: result.error }, { status: 500 });
+    // 2. Proxy to Google Sheets via Apps Script (Requested Backend)
+    if (APPS_SCRIPT_URL && !APPS_SCRIPT_URL.includes('REPLACE_THIS')) {
+      try {
+        await fetch(APPS_SCRIPT_URL, {
+          method: 'POST',
+          body: JSON.stringify({ ...data, action: 'submit' }),
+          headers: { 'Content-Type': 'application/json' }
+        });
+      } catch (scriptErr) {
+        console.error("[AppsScript Proxy Error]", scriptErr);
+      }
     }
 
+    if (result.error) return NextResponse.json({ error: result.error }, { status: 500 });
     return NextResponse.json({ success: true, data: result.data });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
 
-// Handle GET to list submissions (requires password)
+// Handle GET to list submissions
 export async function GET(req: Request) {
   const authHeader = req.headers.get('authorization');
   const envPassword = process.env.ADMIN_PASSWORD || 'admin123';
@@ -77,18 +57,21 @@ export async function GET(req: Request) {
   }
 
   const { searchParams } = new URL(req.url);
-  const type = searchParams.get('type');
-  
-  let query = 'select=*&order=createdat.desc';
-  if (type && type !== 'all') {
-    query += `&type=eq.${type}`;
+  const type = searchParams.get('type') || 'all';
+  const email = searchParams.get('email');
+
+  // If email provided, check for status checker
+  if (email && APPS_SCRIPT_URL && !APPS_SCRIPT_URL.includes('REPLACE_THIS')) {
+    const checkRes = await fetch(`${APPS_SCRIPT_URL}?type=statusCheck&email=${email}`);
+    if (checkRes.ok) return NextResponse.json(await checkRes.json());
   }
+
+  // Otherwise, list for Admin Portal (Supabase)
+  let query = 'select=*&order=createdat.desc';
+  if (type !== 'all') query += `&type=eq.${type}`;
 
   const result = await supabaseREST.select('submissions', query);
-
-  if (result.error) {
-    return NextResponse.json({ error: result.error }, { status: 500 });
-  }
+  if (result.error) return NextResponse.json({ error: result.error }, { status: 500 });
 
   const mappedData = (result.data || []).map((r: any) => ({
     ...r,
@@ -114,14 +97,19 @@ export async function PATCH(req: Request) {
     if (!id || !status) return NextResponse.json({ error: 'Invalid data' }, { status: 400 });
 
     const result = await supabaseREST.update('submissions', id, { status });
-    if (result.error) {
-      return NextResponse.json({ error: result.error }, { status: 500 });
-    }
+    if (result.error) return NextResponse.json({ error: result.error }, { status: 500 });
 
-    // Trigger the automated Google Apps script in the background
-    // Pass status explicitly to guarantee the new value is sent (not stale DB data)
-    if (result.data && result.data.length > 0) {
-      triggerAutoReply({ ...result.data[0], status });
+    // Trigger the automated Google Apps script to send emails and sync sheets
+    if (APPS_SCRIPT_URL && !APPS_SCRIPT_URL.includes('REPLACE_THIS')) {
+      try {
+        await fetch(APPS_SCRIPT_URL, {
+          method: 'POST',
+          body: JSON.stringify({ id, status, action: 'updateStatus' }),
+          headers: { 'Content-Type': 'application/json' }
+        });
+      } catch (err) {
+        console.error("[AppsScript Update Error]", err);
+      }
     }
 
     return NextResponse.json({ success: true });
@@ -129,3 +117,4 @@ export async function PATCH(req: Request) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
+

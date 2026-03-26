@@ -12,7 +12,7 @@ import { ScrollToTop } from '@/components/ui/ScrollToTop';
  */
 export function ConditionalShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const isAdmin = pathname?.startsWith('/careers-admin');
+  const isAdmin = pathname?.startsWith('/careers-admin') || pathname?.startsWith('/carrer-contactus-admin');
 
   if (isAdmin) {
     // Admin pages: bare body, no site shell

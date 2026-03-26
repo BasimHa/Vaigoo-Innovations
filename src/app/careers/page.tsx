@@ -159,68 +159,46 @@ export default function CareersPage() {
     
     // Store hard reference to the form so React's garbage collector doesn't wipe currentTarget during the await!
     const formElement = event.currentTarget;
-    
-    // Map native elements safely via URLSearchParams to explicitly send standard web form encodings to Google
     const nativeData = new FormData(formElement);
-    const searchParams = new URLSearchParams();
     
-    // Convert to Google Form entry IDs safely
+    // Convert to unified API format
     const nameVal = nativeData.get("name");
-    if (nameVal) searchParams.append("entry.1499950111", nameVal as string);
-    
     const emailVal = nativeData.get("email");
-    if (emailVal) searchParams.append("entry.1995264925", emailVal as string);
-    if (focusedArea) {
-      searchParams.append("entry.1711655405", focusedArea);
-      if (focusedArea === "__other_option__") {
-        searchParams.append("entry.1711655405.other_option_response", otherRole || "Not specified");
-      }
-    }
-    // Resume Link Extraction mapped strictly to the new Short Answer Google Form field
     const resumeLinkVal = nativeData.get("resumeLink");
-    if (resumeLinkVal) {
-      searchParams.append("entry.101418272", resumeLinkVal as string);
-    }
-    
+    const internshipTypeVal = nativeData.get("internshipType"); // New field
+
     try {
-      // 1. Send copy to Internal Admin Dashboard quietly
-      const isIntern = focusedArea && focusedArea.toLowerCase().includes('intern');
-      await fetch('/api/submissions', {
+      // Send to Unified Submission API (Handles Google Sheets & Email Automation)
+      const response = await fetch('/api/submissions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          type: isIntern ? 'internship' : 'career',
+          type: 'career',
           name: nameVal,
           email: emailVal,
           position: focusedArea === '__other_option__' ? otherRole : focusedArea,
-          employmentType: isIntern ? 'Internship' : 'Full-Time',
+          employmentType: 'Full-time', // For careers page
+          internshipType: internshipTypeVal || '',
           resume: resumeLinkVal
         })
-      }).catch(e => console.error("Admin POST failed:", e));
-
-      // 2. primary: Google Forms
-      await fetch("https://docs.google.com/forms/u/0/d/e/1FAIpQLSeiL0MaWvIl1Voxoa-PlMkp0nJe_QfeoAyWPKSNVwcWTI0PVg/formResponse", {
-        method: "POST",
-        body: searchParams,
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded"
-        },
-        mode: "no-cors"
       });
+
+      if (!response.ok) throw new Error("Submission failed");
       
-      // Opaque response means the browser sent the POST regardless of cors
       setResult("Submit Application");
       setShowSuccessModal(true);
-      formElement.reset();  // Uses hard reference!
+      formElement.reset();  
       setFocusedArea('');
       setOtherRole('');
       setFileName(null);
       
     } catch (err: any) {
       console.error("Network Fetch Error:", err);
-      setResult(`Error: ${err.message || 'Network issue'}`);
+      setResult("Failed. Try again.");
+      setTimeout(() => setResult("Submit Application"), 4000);
     }
   };
+
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-24">
@@ -283,6 +261,20 @@ export default function CareersPage() {
                </motion.div>
              )}
            </AnimatePresence>
+
+            <motion.div variants={fadeUp}>
+              <label className="block text-sm font-medium text-slate-700 mb-2">Internship Type (If applying for Internship)</label>
+              <select 
+                name="internshipType" 
+                className="w-full px-4 py-3.5 rounded-xl bg-white/80 backdrop-blur-sm border border-slate-200/80 focus:outline-none focus:ring-2 focus:ring-primary-blue/50 focus:border-primary-blue transition-all duration-300 shadow-sm text-slate-900"
+              >
+                <option value="">Select Internship Type (Optional)</option>
+                <option value="Internship 6 Months Paid">Internship 6 Months Paid</option>
+                <option value="Internship 6 Months Free">Internship 6 Months Free</option>
+                <option value="Internship 12 Months Paid">Internship 12 Months Paid</option>
+                <option value="Internship 12 Months Free">Internship 12 Months Free</option>
+              </select>
+            </motion.div>
 
            <motion.div variants={fadeUp}>
              <label className="block text-sm font-medium text-slate-700 mb-2">Portfolio / Resume Link</label>

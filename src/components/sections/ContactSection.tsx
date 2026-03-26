@@ -39,8 +39,8 @@ export const ContactSection = () => {
     }
     
     try {
-      // 1. Send copy to Internal Admin Dashboard quietly
-      await fetch('/api/submissions', {
+      // Send to Unified Submission API (Handles Google Sheets & Email Automation)
+      const response = await fetch('/api/submissions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -50,17 +50,9 @@ export const ContactSection = () => {
           phone: phoneNumber ? `${selectedCountry.code} ${phoneNumber}` : null,
           message: messageVal
         })
-      }).catch(e => console.error("Admin POST failed:", e));
-
-      // 2. Send primary to Google Forms
-      await fetch("https://docs.google.com/forms/u/0/d/e/1FAIpQLSdCBrMfuGPfUqmaZFwgUnLhpXlba5hhYWyXH0M_anLmQPSXAQ/formResponse", {
-        method: "POST",
-        body: searchParams,
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded"
-        },
-        mode: "no-cors" // Required to bypass opaque Google CORS
       });
+
+      if (!response.ok) throw new Error("Submission failed");
       
       setResult("Send Message");
       setShowSuccessModal(true);
@@ -72,6 +64,7 @@ export const ContactSection = () => {
       setTimeout(() => setResult("Send Message"), 4000);
     }
   };
+
 
   return (
     <section id="contact" className="py-16 md:py-24 relative">

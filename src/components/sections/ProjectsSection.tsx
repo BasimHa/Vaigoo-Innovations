@@ -32,6 +32,14 @@ const projects = [
     description: "Dynamic outdoor advertising network portal and business site.",
     href: "https://aiswariaooh.com/",
     imageSrc: "https://s0.wp.com/mshots/v1/https://aiswariaooh.com?w=1200&h=1800"
+  },
+  {
+    title: "Tap & Order",
+    category: "Restaurant POS Solutions",
+    description: "Comprehensive Restaurant POS software for order management and analytics.",
+    href: "https://tapnorder.co.in/",
+    imageSrc: "/Images/tap-and-order.png",
+    iframeSrc: "https://www.tapnorder.co.in/"
   }
 ];
 
@@ -62,7 +70,7 @@ export const ProjectsSection = () => {
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: "-100px" }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-10"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-[repeat(auto-fit,minmax(280px,1fr))] gap-5 md:gap-5"
         >
           {projects.map((project, idx) => (
             <ProjectCard 
@@ -72,6 +80,7 @@ export const ProjectsSection = () => {
               description={project.description}
               href={project.href}
               imageSrc={project.imageSrc}
+              iframeSrc={'iframeSrc' in project ? project.iframeSrc : undefined}
             />
           ))}
         </motion.div>

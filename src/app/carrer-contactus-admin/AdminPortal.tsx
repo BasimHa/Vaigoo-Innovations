@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import JobsManager from './JobsManager';
-import { Search, RefreshCw, Mail, Briefcase, GraduationCap, CheckCircle, Clock, XCircle, Lock, Eye, Download, Settings } from 'lucide-react';
+import { Search, RefreshCw, Mail, Briefcase, GraduationCap, CheckCircle, Clock, XCircle, Lock, Eye, Download, Settings, Calendar, Video } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 type Submission = {
@@ -13,11 +13,15 @@ type Submission = {
   phone: string | null;
   message: string | null;
   position: string | null;
+  domain: string | null; // Added
   employmentType: string | null;
   duration: string | null;
+  internshipType: string | null; // Added
   paidType: string | null;
   resume: string | null;
-  status: "new" | "reviewed" | "shortlisted" | "rejected";
+  status: "Pending" | "Reviewed" | "Shortlisted" | "Rejected"; // Updated
+  interviewDate: string | null; // Added
+  meetLink: string | null; // Added
   createdAt: string;
 };
 
@@ -93,6 +97,17 @@ export default function AdminPortal() {
     }
   }, [activeTab]);
 
+  useEffect(() => {
+    if (selectedSub) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [selectedSub]);
+
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4">
@@ -124,7 +139,8 @@ export default function AdminPortal() {
   const filteredSubmissions = submissions.filter(s => 
     s.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
     s.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (s.position?.toLowerCase().includes(searchQuery.toLowerCase()))
+    (s.position?.toLowerCase().includes(searchQuery.toLowerCase())) ||
+    (s.domain?.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
   return (
@@ -133,10 +149,10 @@ export default function AdminPortal() {
       <header className="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-[72px] flex items-center justify-between">
           <div className="flex items-center gap-3">
-             <div className="w-10 h-10 bg-gradient-primary text-white rounded-xl flex items-center justify-center shadow-md">
+             <div className="w-10 h-10 bg-gradient-primary text-white rounded-xl flex items-center justify-center shadow-md shrink-0">
                <span className="font-bold text-sm tracking-widest">VI</span>
              </div>
-             <h1 className="font-bold text-slate-900 text-lg hidden sm:block">Unified Submissions</h1>
+             <h1 className="font-bold text-slate-900 text-lg hidden sm:block truncate">Unified Submissions</h1>
           </div>
           <div className="flex items-center gap-4">
              <div className="relative hidden md:block">
@@ -159,8 +175,8 @@ export default function AdminPortal() {
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col lg:flex-row gap-8">
         
         {/* Sidebar Tabs */}
-        <div className="w-full lg:w-64 shrink-0">
-          <nav className="flex lg:flex-col gap-2 overflow-x-auto pb-4 lg:pb-0 scrollbar-hide">
+        <div className="w-full lg:w-72 shrink-0">
+          <nav className="flex lg:flex-col gap-2 overflow-x-auto lg:overflow-visible pb-4 lg:pb-0 scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0">
             {[
               { id: 'all', label: 'All Submissions', icon: <CheckCircle size={18} /> },
               { id: 'contact', label: 'Contact Messages', icon: <Mail size={18} /> },
@@ -171,9 +187,9 @@ export default function AdminPortal() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
-                className={`flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium text-sm transition whitespace-nowrap ${activeTab === tab.id ? 'bg-slate-900 text-white shadow-lg shadow-slate-900/20' : 'text-slate-600 hover:bg-slate-200/50 hover:text-slate-900'}`}
+                className={`flex items-center gap-3 px-5 py-4 lg:py-3.5 rounded-2xl lg:rounded-xl font-bold lg:font-medium text-sm transition-all whitespace-nowrap active:scale-95 ${activeTab === tab.id ? 'bg-slate-900 text-white shadow-lg shadow-slate-900/20' : 'bg-white lg:bg-transparent border border-slate-100 lg:border-transparent text-slate-600 hover:bg-slate-200/50 hover:text-slate-900'}`}
               >
-                {tab.icon}
+                <span className={`${activeTab === tab.id ? 'text-primary-blue' : 'text-slate-400'}`}>{tab.icon}</span>
                 {tab.label}
               </button>
             ))}
@@ -199,22 +215,25 @@ export default function AdminPortal() {
                </div>
            </div>
 
-           {loading && submissions.length === 0 ? (
+            {loading && submissions.length === 0 ? (
              <div className="flex-1 flex flex-col items-center justify-center text-slate-400">
                 <RefreshCw size={32} className="animate-spin mb-4 text-slate-300" />
                 <p>Loading database records...</p>
              </div>
-           ) : submissions.length === 0 ? (
-             <div className="flex-1 flex flex-col items-center justify-center text-slate-500">
-               <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4">
-                 <Search size={24} className="text-slate-300" />
+            ) : submissions.length === 0 ? (
+             <div className="flex-1 flex flex-col items-center justify-center text-slate-500 py-20">
+               <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4 text-slate-300">
+                 <Search size={24} />
                </div>
                <p className="font-medium text-slate-700 mb-1">No Submissions Found</p>
                <p className="text-sm">There are no records in this category yet.</p>
              </div>
-           ) : (
-             <div className="overflow-x-auto flex-1">
-               <table className="w-full text-left border-collapse min-w-[800px]">
+            ) : (
+             <div className="relative flex-1 group/table">
+               {/* Mobile Scroll Indicator */}
+               <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white to-transparent pointer-events-none z-10 opacity-0 group-hover/table:opacity-100 lg:hidden transition-opacity" />
+               <div className="overflow-x-auto flex-1 scrollbar-thin">
+                 <table className="w-full text-left border-collapse min-w-[700px] lg:min-w-[800px]">
                  <thead>
                    <tr className="bg-slate-50/80 border-b border-slate-200 text-xs uppercase tracking-wider text-slate-500">
                      <th className="px-6 py-4 font-semibold rounded-tl-3xl">Candidate / User</th>
@@ -238,7 +257,7 @@ export default function AdminPortal() {
                          </span>
                        </td>
                        <td className="px-6 py-4">
-                          <p className="text-sm font-medium text-slate-700 line-clamp-1">{sub.position || '—'}</p>
+                          <p className="text-sm font-medium text-slate-700 line-clamp-1">{sub.position || sub.domain || '—'}</p>
                        </td>
                        <td className="px-6 py-4">
                          <StatusBadge status={sub.status} />
@@ -253,15 +272,11 @@ export default function AdminPortal() {
                        </td>
                      </tr>
                    ))}
-                   {filteredSubmissions.length === 0 && (
-                      <tr>
-                        <td colSpan={6} className="p-8 text-center text-slate-500">No matching results for "{searchQuery}"</td>
-                      </tr>
-                   )}
                  </tbody>
                </table>
              </div>
-           )}
+           </div>
+          )}
         </div>
         )}
       </main>
@@ -269,18 +284,18 @@ export default function AdminPortal() {
       {/* Detail Modal Layer */}
       <AnimatePresence>
         {selectedSub && (
-          <div className="fixed inset-0 z-50 flex items-center justify-end p-0 sm:p-4">
+          <div className="fixed inset-0 z-[9999] flex items-stretch justify-end p-0 isolate pointer-events-none">
             <motion.div 
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-slate-900/30 backdrop-blur-sm"
+              className="absolute inset-0 bg-black/40 backdrop-blur-sm pointer-events-auto"
               onClick={() => setSelectedSub(null)}
             />
             <motion.div 
               initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="relative bg-white w-full sm:max-w-[480px] h-[100dvh] sm:h-[calc(100vh-32px)] sm:rounded-3xl shadow-2xl flex flex-col z-10 overflow-hidden border border-slate-100"
+              className="relative bg-white w-full sm:w-[450px] h-[100dvh] shadow-2xl flex flex-col z-50 overflow-hidden border-l border-slate-100 pointer-events-auto"
             >
-              <div className="p-6 md:p-8 bg-slate-50/80 border-b border-slate-100 flex items-start justify-between">
+              <div className="p-6 md:p-8 bg-slate-50/95 backdrop-blur-md border-b border-slate-200 flex items-start justify-between sticky top-0 z-[60]">
                 <div>
                   <div className="flex items-center gap-3 mb-3">
                      <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wider ${selectedSub.type === 'contact' ? 'bg-purple-100 text-purple-700' : selectedSub.type === 'career' ? 'bg-blue-100 text-blue-700' : 'bg-emerald-100 text-emerald-700'}`}>
@@ -290,20 +305,17 @@ export default function AdminPortal() {
                   </div>
                   <h2 className="text-2xl font-bold text-slate-900">{selectedSub.name}</h2>
                 </div>
-                <button onClick={() => setSelectedSub(null)} className="p-2.5 bg-white shadow-sm border border-slate-200 text-slate-500 rounded-full hover:bg-slate-50 hover:text-slate-900 transition-colors">
+                <button onClick={() => setSelectedSub(null)} className="p-2.5 bg-white shadow-md border border-slate-200 text-slate-700 rounded-full hover:bg-slate-100 hover:text-red-500 transition-colors">
                   <XCircle size={24} />
                 </button>
               </div>
 
               <div className="p-6 md:p-8 overflow-y-auto flex-1 space-y-8 scrollbar-hide">
-                {/* Contact Data */}
                 <section>
                   <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Contact Details</h4>
-                  <div className="grid grid-cols-1 gap-4">
+                  <div className="space-y-3">
                     <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-400 shrink-0">
-                         <Mail size={18} />
-                      </div>
+                      <Mail size={18} className="text-slate-400" />
                       <div className="overflow-hidden">
                         <p className="text-xs text-slate-500 font-medium">Email Address</p>
                         <a href={`mailto:${selectedSub.email}`} className="text-slate-900 font-bold truncate block hover:text-primary-blue">{selectedSub.email}</a>
@@ -311,9 +323,7 @@ export default function AdminPortal() {
                     </div>
                     {selectedSub.phone && (
                        <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 flex items-center gap-4">
-                         <div className="w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-400 shrink-0">
-                            <Clock size={18} /> {/* Using clock arbitrarily, typically phone icon goes here */}
-                         </div>
+                          <p className="text-slate-400 font-bold">#</p>
                          <div className="overflow-hidden">
                            <p className="text-xs text-slate-500 font-medium">Phone Number</p>
                            <a href={`tel:${selectedSub.phone}`} className="text-slate-900 font-bold truncate block hover:text-primary-blue">{selectedSub.phone}</a>
@@ -323,76 +333,78 @@ export default function AdminPortal() {
                   </div>
                 </section>
 
-                {/* Specifics Payload Setup */}
                 <section>
-                  <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">
-                    {selectedSub.type === 'contact' ? 'Message Payload' : 'Application Context'}
-                  </h4>
+                  <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Content Context</h4>
                   
-                  {selectedSub.type === 'contact' ? (
-                    <div className="bg-blue-50/50 p-5 rounded-2xl border border-blue-100/50 text-slate-700 text-sm leading-relaxed whitespace-pre-wrap">
-                      {selectedSub.message || 'No message left.'}
-                    </div>
-                  ) : (
-                    <div className="space-y-4">
-                      <div className="bg-slate-50 p-5 rounded-2xl border border-slate-100">
-                         <p className="text-xs text-slate-500 font-medium mb-1">Target Position / Area</p>
-                         <p className="font-bold text-slate-900 text-lg">{selectedSub.position || 'General Inquiry'}</p>
+                  <div className="space-y-4">
+                    {selectedSub.type === 'contact' ? (
+                      <div className="bg-blue-50/50 p-5 rounded-2xl border border-blue-100/50 text-slate-700 text-sm leading-relaxed whitespace-pre-wrap font-medium">
+                        {selectedSub.message || 'No message left.'}
                       </div>
-                      
-                      <div className="grid grid-cols-2 gap-4">
-                        {selectedSub.employmentType && (
-                          <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                            <p className="text-xs text-slate-500 font-medium mb-1">Role Type</p>
-                            <p className="font-bold text-slate-900">{selectedSub.employmentType}</p>
-                          </div>
-                        )}
-                        {selectedSub.type === 'internship' && (
-                          <>
-                            <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                              <p className="text-xs text-slate-500 font-medium mb-1">Duration</p>
-                              <p className="font-bold text-slate-900">{selectedSub.duration || 'N/A'}</p>
-                            </div>
-                            <div className="bg-amber-50 p-4 rounded-2xl border border-amber-100">
-                              <p className="text-xs text-amber-600/70 font-medium mb-1">Structure</p>
-                              <p className="font-bold text-amber-900 capitalize">{selectedSub.paidType || 'N/A'}</p>
-                            </div>
-                          </>
-                        )}
-                      </div>
-
-                      {selectedSub.resume && (
-                        <div className="pt-4">
-                          <a 
-                            href={selectedSub.resume} 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="flex items-center justify-center gap-2 w-full py-4 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800 transition shadow-lg shadow-slate-900/20"
-                          >
-                            <Download size={18} /> Download / View Resume
-                          </a>
+                    ) : (
+                      <>
+                        <div className="bg-slate-50 p-5 rounded-2xl border border-slate-100">
+                           <p className="text-xs text-slate-500 font-medium mb-1">Target Position / Domain</p>
+                           <p className="font-bold text-slate-900 text-lg">{selectedSub.position || selectedSub.domain || 'General Inquiry'}</p>
                         </div>
-                      )}
-                    </div>
-                  )}
+                        
+                        <div className="grid grid-cols-2 gap-4">
+                          {selectedSub.employmentType && (
+                            <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                              <p className="text-xs text-slate-500 font-medium mb-1">Emp Type</p>
+                              <p className="font-bold text-slate-900 text-sm">{selectedSub.employmentType}</p>
+                            </div>
+                          )}
+                          {selectedSub.internshipType && (
+                             <div className="bg-amber-50 p-4 rounded-2xl border border-amber-100">
+                               <p className="text-xs text-amber-600/70 font-medium mb-1">Structure</p>
+                               <p className="font-bold text-amber-900 text-xs">{selectedSub.internshipType}</p>
+                             </div>
+                          )}
+                          {selectedSub.duration && (
+                             <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                               <p className="text-xs text-slate-500 font-medium mb-1">Duration</p>
+                               <p className="font-bold text-slate-900 text-sm">{selectedSub.duration}</p>
+                             </div>
+                          )}
+                        </div>
+                      </>
+                    )}
+
+                    {selectedSub.resume && (
+                      <a href={selectedSub.resume} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 w-full py-4 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800 transition shadow-lg">
+                        <Download size={18} /> View Portfolio / Resume
+                      </a>
+                    )}
+
+                    {selectedSub.interviewDate && (
+                      <div className="bg-emerald-50 p-5 rounded-2xl border border-emerald-100">
+                         <p className="text-xs text-emerald-600 font-bold uppercase tracking-wider mb-2">Interview Scheduled</p>
+                         <div className="flex items-center gap-3 text-emerald-900 font-bold">
+                           <Calendar size={18} /> {selectedSub.interviewDate}
+                         </div>
+                         {selectedSub.meetLink && (
+                           <a href={selectedSub.meetLink} target="_blank" className="mt-3 flex items-center gap-2 text-primary-blue text-sm font-bold hover:underline">
+                             <Video size={16} /> Join Google Meet
+                           </a>
+                         )}
+                      </div>
+                    )}
+                  </div>
                 </section>
 
-                {/* Workflow Tools */}
-                <section className="pt-6 border-t border-slate-100">
+                <section className="pt-6 pb-6 border-t border-slate-100">
                   <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Pipeline Status</h4>
                   <div className="grid grid-cols-2 gap-3">
-                    {['new', 'reviewed', 'shortlisted', 'rejected'].map(st => {
-                      const isActive = selectedSub.status === st;
-                      return (
-                        <button
-                          key={st}
-                          onClick={() => updateStatus(selectedSub.id, st)}
-                          className={`px-4 py-3 rounded-xl text-sm font-bold capitalize transition-all border-2 ${isActive ? 'bg-primary-blue text-white border-primary-blue shadow-md' : 'bg-white text-slate-600 border-slate-100 hover:border-slate-300 hover:bg-slate-50'}`}
-                        >
-                          {st}
-                        </button>
-                      );
-                    })}
+                    {['Pending', 'Reviewed', 'Shortlisted', 'Rejected'].map(st => (
+                      <button
+                        key={st}
+                        onClick={() => updateStatus(selectedSub.id, st)}
+                        className={`px-4 py-3 rounded-xl text-xs font-bold transition-all border-2 ${selectedSub.status === st ? 'bg-primary-blue text-white border-primary-blue' : 'bg-white text-slate-700 border-slate-200 hover:border-slate-300'}`}
+                      >
+                        {st}
+                      </button>
+                    ))}
                   </div>
                 </section>
               </div>
@@ -406,17 +418,16 @@ export default function AdminPortal() {
 
 function StatusBadge({ status }: { status: string }) {
   const map: any = {
-    new: 'bg-amber-100 text-amber-700',
-    reviewed: 'bg-blue-100 text-blue-700',
-    shortlisted: 'bg-emerald-100 text-emerald-700',
-    rejected: 'bg-rose-100 text-rose-700'
+    Pending: 'bg-amber-100 text-amber-700',
+    Reviewed: 'bg-blue-100 text-blue-700',
+    Shortlisted: 'bg-emerald-100 text-emerald-700',
+    Rejected: 'bg-rose-100 text-rose-700'
   };
   const cls = map[status] || 'bg-slate-100 text-slate-700';
   return (
-    <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wider ${cls}`}>
-      {status === 'new' && <Clock size={12} className="mr-1.5" strokeWidth={3} />}
-      {status !== 'new' && <CheckCircle size={12} className="mr-1.5" strokeWidth={3} />}
-      {status}
+    <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider ${cls}`}>
+       {status}
     </span>
   );
 }
+
