@@ -51,30 +51,67 @@ function doGet(e) {
 
 function handleSubmission(data) {
   const sheet = getSheet(SHEET_NAME_SUBMISSIONS);
-  const id = Utilities.getUuid();
-  const timestamp = new Date();
+  const id = Utilities.getUuid(); // Keep for potential future use or if needed for other parts
   
+  // Case: Submission (from API or direct Google Form POST)
+  // Map Google Form entry IDs to clean keys if necessary
+  const mappedData = { ...data };
+  const entryMap = {
+    'entry.1152972438': 'name',    // Contact Name
+    'entry.1658472497': 'name',    // Career Name
+    'entry.129797516':  'email',   // Contact Email
+    'entry.862200673':  'email',   // Career Email
+    'entry.1015696628': 'phone',   // Contact Phone
+    'entry.435392044':  'phone',   // Career Phone
+    'entry.1656020467': 'message', // Contact Message
+    'entry.1724599138': 'message', // Career Message
+    'entry.153460694':  'position',// Career Position
+    'entry.1608247299': 'resume'   // Career Resume
+  };
+
+  for (let key in data) {
+    if (entryMap[key]) {
+      mappedData[entryMap[key]] = data[key];
+    }
+  }
+
   // Columns: ID, Timestamp, Type, Name, Email, Phone, Message/Position/Domain, EmploymentType, Duration, InternshipType, Resume, Status, InterviewDate, MeetLink, LastStatusEmail
-  const rowData = [
-    id,
-    timestamp,
-    data.type, // 'contact', 'career', 'internship'
-    data.name,
-    data.email,
-    data.phone || '',
-    data.message || data.position || data.domain || '',
-    data.employmentType || '',
-    data.duration || '',
-    data.internshipType || '',
-    data.resume || '',
-    'Pending', // Default status
+  const row = [
+    id, // Use the generated ID
+    new Date(), // Timestamp
+    mappedData.type || 'unknown',
+    mappedData.name || '',
+    mappedData.email || '',
+    mappedData.phone || '',
+    mappedData.message || mappedData.position || mappedData.domain || '', // Payload
+    mappedData.employmentType || '',
+    mappedData.duration || '',
+    mappedData.internshipType || '',
+    mappedData.resume || '',
+    'Pending', // Initial Status
     '', // InterviewDate
     '', // MeetLink
     ''  // Last Sent Status Email
   ];
+  sheet.appendRow(row);
   
-  sheet.appendRow(rowData);
-  return response({ success: true, id: id });
+  // Auto-reply to user (Simplified Apple-style Email)
+  if (mappedData.email) { // Only send if email is available
+    MailApp.sendEmail({
+      to: mappedData.email,
+      subject: `Form Received - Vaigoo Innovations`,
+      htmlBody: `
+        <div style="font-family: -apple-system, sans-serif; padding: 40px; color: #1c1c1e; max-width: 600px; margin: auto; border: 1px solid #e5e5e7; border-radius: 20px;">
+          <p style="font-weight: 600; color: #0071e3;">Confirmation</p>
+          <h1 style="font-size: 24px; font-weight: 700;">Hello ${mappedData.name || 'there'},</h1>
+          <p>Thank you for reaching out to <b>Vaigoo Innovations</b>. We have received your ${mappedData.type || 'request'} and our team will review it shortly.</p>
+          <hr style="border: none; border-top: 1px solid #e5e5e7; margin: 20px 0;">
+          <p style="font-size: 14px; color: #86868b;">This is an automated receipt. You can track your application status on our website using your email.</p>
+        </div>
+      `
+    });
+  }
+  return ContentService.createTextOutput(JSON.stringify({ success: true, id: id })).setMimeType(ContentService.MimeType.JSON);
 }
 
 function handleUpdateStatus(data) {

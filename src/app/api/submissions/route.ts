@@ -3,6 +3,41 @@ import { supabaseREST } from '@/lib/supabase';
 
 const APPS_SCRIPT_URL = process.env.NEXT_PUBLIC_APPS_SCRIPT_URL || '';
 
+async function submitToGoogleForm(data: any) {
+  try {
+    const isCareer = data.type === 'career';
+    const formUrl = isCareer 
+      ? 'https://docs.google.com/forms/u/0/d/e/1FAIpQLSdC2Z5tERW2sYtjzJN4VP-xCss-aWr1WxaLLqv2gvXCiLwH_Q/formResponse'
+      : 'https://docs.google.com/forms/u/0/d/e/1FAIpQLSc37vKm2W-WC47FvzG64RV14UBiM7MGvXXT7OSCdCSCTikgqA/formResponse';
+
+    const body = new URLSearchParams();
+    
+    if (isCareer) {
+      body.append('entry.1658472497', data.name || '');
+      body.append('entry.862200673', data.email || '');
+      body.append('entry.435392044', data.phone || '');
+      body.append('entry.153460694', data.position || '');
+      body.append('entry.1608247299', data.resume || '');
+      body.append('entry.1724599138', data.message || '');
+    } else {
+      // Contact Form Mapping
+      body.append('entry.1152972438', data.name || '');
+      body.append('entry.129797516', data.email || '');
+      body.append('entry.1015696628', data.phone || '');
+      body.append('entry.1656020467', data.message || '');
+    }
+
+    await fetch(formUrl, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: body.toString()
+    });
+  } catch (err) {
+    console.error("[GoogleForm Backup Error]", err);
+  }
+}
+
 // Handle POST to save an application/contact form
 export async function POST(req: Request) {
   try {
@@ -24,10 +59,10 @@ export async function POST(req: Request) {
        duration: data.duration,
        paidtype: data.paidType || data.paidtype,
        resume: data.resume,
-       status: 'Pending' // Standardized initial status
+       status: 'Pending'
     });
 
-    // 2. Proxy to Google Sheets via Apps Script (Requested Backend)
+    // 2. Proxy to Unified Google Apps Script (Email/Calendar Automation)
     if (APPS_SCRIPT_URL && !APPS_SCRIPT_URL.includes('REPLACE_THIS')) {
       try {
         await fetch(APPS_SCRIPT_URL, {
@@ -40,12 +75,16 @@ export async function POST(req: Request) {
       }
     }
 
+    // 3. Backup: Send to direct Google Form directly (Requested re-integration)
+    submitToGoogleForm(data);
+
     if (result.error) return NextResponse.json({ error: result.error }, { status: 500 });
     return NextResponse.json({ success: true, data: result.data });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
+
 
 // Handle GET to list submissions
 export async function GET(req: Request) {
