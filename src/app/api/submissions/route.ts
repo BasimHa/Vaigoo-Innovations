@@ -96,8 +96,14 @@ export async function POST(req: Request) {
 export async function GET(req: Request) {
   const authHeader = req.headers.get('authorization');
   const envPassword = process.env.ADMIN_PASSWORD || 'admin123';
-  
-  if (!authHeader || authHeader !== `Bearer ${envPassword}`) {
+  const envPasswordExceptCase = process.env.ADMIN_PASSWORD_EXCEPT_CASE || '';
+  const providedToken = authHeader?.replace('Bearer ', '') || '';
+
+  const primaryMatch = authHeader === `Bearer ${envPassword}`;
+  const secondaryMatch = envPasswordExceptCase &&
+    providedToken.toLowerCase() === envPasswordExceptCase.toLowerCase();
+
+  if (!primaryMatch && !secondaryMatch) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -132,8 +138,14 @@ export async function GET(req: Request) {
 export async function PATCH(req: Request) {
   const authHeader = req.headers.get('authorization');
   const envPassword = process.env.ADMIN_PASSWORD || 'admin123';
-  
-  if (!authHeader || authHeader !== `Bearer ${envPassword}`) {
+  const envPasswordExceptCase = process.env.ADMIN_PASSWORD_EXCEPT_CASE || '';
+  const providedToken = authHeader?.replace('Bearer ', '') || '';
+
+  const primaryMatch = authHeader === `Bearer ${envPassword}`;
+  const secondaryMatch = envPasswordExceptCase &&
+    providedToken.toLowerCase() === envPasswordExceptCase.toLowerCase();
+
+  if (!primaryMatch && !secondaryMatch) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
