@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server';
 
+export const dynamic = 'force-dynamic';
+export const fetchCache = 'force-no-store';
+
 import { supabase } from '@/lib/supabase';
 
 const URL_MAP: Record<string, string> = {
@@ -30,9 +33,9 @@ export async function GET(req: Request) {
     try {
       // Fetch all three sources concurrently to aggregate for analytics
       const [contactRes, careerRes, internshipRes] = await Promise.all([
-        fetch(URL_MAP.contact),
-        fetch(URL_MAP.career),
-        fetch(URL_MAP.internship)
+        fetch(URL_MAP.contact, { cache: 'no-store' }),
+        fetch(URL_MAP.career, { cache: 'no-store' }),
+        fetch(URL_MAP.internship, { cache: 'no-store' })
       ]);
 
       const [contactJson, careerJson, internshipJson] = await Promise.all([
@@ -58,7 +61,7 @@ export async function GET(req: Request) {
   }
 
   try {
-    const googleRes = await fetch(URL_MAP[type], { method: "GET" });
+    const googleRes = await fetch(URL_MAP[type], { method: "GET", cache: 'no-store' });
     
     // Check content-type before parsing — GAS sometimes returns HTML error pages
     const contentType = googleRes.headers.get('content-type') || '';
