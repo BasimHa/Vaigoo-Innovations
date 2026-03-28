@@ -10,18 +10,6 @@ const URL_MAP: Record<string, string> = {
 
 async function isAuthorized(req: Request) {
   const authHeader = req.headers.get('Authorization');
-  if (!authHeader || !authHeader.startsWith('Bearer ')) return false;
-  const token = authHeader.split(' ')[1];
-  
-  // Verify token with Supabase
-  if (!supabase) {
-    console.error("Supabase client not initialized. Check your environment variables.");
-    return false;
-  }
-  
-  const { data: { user }, error } = await supabase.auth.getUser(token);
-  
-  if (error || !user) return false;
   
   // Optional: Check for admin role in user_metadata or profiles table
   // const isAdmin = user.app_metadata?.role === 'admin' || user.user_metadata?.is_admin;
@@ -53,6 +41,7 @@ export async function GET(req: Request) {
     
     return NextResponse.json(data, { status: 200 });
   } catch (error: any) {
+    console.error("DASHBOARD_API_ERROR:", error);
     return NextResponse.json({ error: error.message || 'Failed fetching from Google Sheets' }, { status: 500 });
   }
 }

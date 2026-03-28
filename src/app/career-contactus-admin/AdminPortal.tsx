@@ -1,11 +1,12 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { Search, RefreshCw, Mail, Briefcase, GraduationCap, Clock, CheckCircle2, XCircle, Lock, LayoutDashboard, Calendar, Video, ChevronRight, X, LogOut } from 'lucide-react';
+import { Search, RefreshCw, Mail, Briefcase, GraduationCap, Clock, CheckCircle2, XCircle, Lock, LayoutDashboard, Calendar, Video, ChevronRight, X, LogOut, TrendingUp, Sparkles, PieChart } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/lib/supabase';
+import AnalyticsTab from './AnalyticsTab';
 
-type TabType = 'contact' | 'career' | 'internship';
+type TabType = 'contact' | 'career' | 'internship' | 'analytics';
 
 export default function AdminPortal() {
   const [email, setEmail] = useState('');
@@ -64,7 +65,7 @@ export default function AdminPortal() {
 
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
-        email,
+        email: 'basimhassan325@gmail.com', // Fixed admin email
         password
       });
 
@@ -134,45 +135,32 @@ export default function AdminPortal() {
   };
 
   const handleStatusChangeClick = (sub: any, newStatus: string) => {
-    if (newStatus === 'Shortlisted') {
-      setShortlistTarget(sub);
-      setInterviewDate('');
-      setMeetLink('');
-      setShowShortlistModal(true);
-    } else {
-      updateStatus(sub.Email, newStatus);
-    }
+    updateStatus(sub.Email, newStatus);
   };
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-[#000000] flex flex-col items-center justify-center p-4 font-sans">
-        <div className="bg-[#0a0a0a] border border-[#1a1a1a] p-10 rounded-3xl shadow-2xl max-w-sm w-full">
-          <div className="w-16 h-16 bg-[#111111] border border-[#222222] text-white rounded-2xl flex items-center justify-center mb-6">
-            <Lock size={28} />
+      <div className="min-h-screen bg-[#f3f4f6] flex flex-col items-center justify-center p-4 font-sans">
+        <div className="bg-white border border-slate-200 p-10 rounded-2xl shadow-xl max-w-sm w-full">
+          <div className="flex justify-center mb-6">
+            <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center">
+              <Lock size={28} />
+            </div>
           </div>
-          <h1 className="text-2xl font-semibold text-white mb-2 tracking-tight">System Admin</h1>
-          <p className="text-[#666666] mb-8 text-sm leading-relaxed">Secure environment. Authentic workspace credentials required.</p>
+          <h1 className="text-2xl font-bold text-slate-900 mb-2 tracking-tight text-center">Admin Access</h1>
+          <p className="text-slate-500 mb-8 text-sm leading-relaxed text-center font-medium">Please enter the security passkey to access the unified submission dashboard.</p>
           <form onSubmit={handleLogin} className="space-y-4">
-            <input
-              type="email"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              className="w-full px-5 py-4 rounded-xl bg-[#111111] border border-[#222222] text-white focus:outline-none focus:border-[#444444] transition-colors placeholder-[#555555]"
-              placeholder="Official Email"
-              required
-            />
             <input
               type="password"
               value={password}
               onChange={e => setPassword(e.target.value)}
-              className="w-full px-5 py-4 rounded-xl bg-[#111111] border border-[#222222] text-white focus:outline-none focus:border-[#444444] transition-colors placeholder-[#555555]"
-              placeholder="Enter passkey"
+              className="w-full px-5 py-4 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all placeholder-slate-400 font-medium"
+              placeholder="Enter passkey..."
               required
             />
-            {authError && <p className="text-red-400 text-xs">{authError}</p>}
-            <button type="submit" disabled={loading} className="w-full bg-white text-black font-semibold py-4 rounded-xl hover:bg-[#e0e0e0] transition-colors disabled:opacity-50 mt-2">
-              {loading ? 'Authenticating...' : 'Enter Dashboard'}
+            {authError && <p className="text-red-500 text-xs font-semibold text-center">{authError}</p>}
+            <button type="submit" disabled={loading} className="w-full bg-slate-900 text-white font-bold py-4 rounded-xl hover:bg-slate-800 transition-colors disabled:opacity-50 mt-2">
+              {loading ? 'Verifying...' : 'Access Dashboard'}
             </button>
           </form>
         </div>
@@ -202,6 +190,7 @@ export default function AdminPortal() {
             { id: 'career', label: 'Careers', icon: <Briefcase size={16} /> },
             { id: 'internship', label: 'Internships', icon: <GraduationCap size={16} /> },
             { id: 'contact', label: 'Contacts', icon: <Mail size={16} /> },
+            { id: 'analytics', label: 'Intelligence', icon: <TrendingUp size={16} /> },
           ].map(tab => (
             <button
               key={tab.id}
@@ -243,7 +232,7 @@ export default function AdminPortal() {
                 className="pl-10 pr-4 py-2 bg-[#0a0a0a] border border-[#1a1a1a] rounded-lg text-sm focus:outline-none focus:border-[#333333] text-white w-64 transition-all placeholder-[#444444]"
               />
             </div>
-            <button onClick={() => fetchSubmissions(password, activeTab)} className="w-9 h-9 flex items-center justify-center bg-[#111111] hover:bg-[#1a1a1a] border border-[#222222] rounded-lg text-white transition-all">
+            <button onClick={() => fetchSubmissions(token, activeTab)} className="w-9 h-9 flex items-center justify-center bg-[#111111] hover:bg-[#1a1a1a] border border-[#222222] rounded-lg text-white transition-all">
               <RefreshCw size={16} className={loading ? "animate-spin" : ""} />
             </button>
           </div>
@@ -251,7 +240,9 @@ export default function AdminPortal() {
 
         {/* Data Table Area */}
         <div className="flex-1 overflow-auto p-8 relative">
-          {loading && submissions.length === 0 ? (
+          {activeTab === 'analytics' ? (
+            <AnalyticsTab data={submissions} activeTab={activeTab} />
+          ) : loading && submissions.length === 0 ? (
             <div className="absolute inset-0 flex items-center justify-center text-[#555555] gap-3">
               <RefreshCw size={20} className="animate-spin" /> Loading real-time data from Sheets...
             </div>
@@ -390,7 +381,6 @@ export default function AdminPortal() {
                 {activeTab !== 'contact' && (
                   <div className="pt-8 border-t border-[#1a1a1a]">
                     <h4 className="text-xs text-[#666] font-semibold mb-4 uppercase tracking-wider">Application Decision</h4>
-                    <p className="text-xs text-[#555] mb-4">* Changing status sends automated email to applicant (unless duplicate).</p>
                     <div className="grid grid-cols-2 gap-3">
                       {['Pending', 'Reviewed', 'Shortlisted', 'Rejected'].map(st => (
                         <button

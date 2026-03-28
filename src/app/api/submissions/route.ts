@@ -8,30 +8,16 @@ async function submitToGoogleForm(data: any) {
     let formUrl = '';
     const body = new URLSearchParams();
 
-    if (data.type === 'internship') {
-      formUrl = 'https://docs.google.com/forms/u/0/d/e/1FAIpQLSe-z7QqXpLyX0iGRAy2Gnw9RUamrw0DJB8flt-A_AxtoE-tqQ/formResponse';
-      body.append('entry.1214236803', data.name || '');
-      body.append('entry.610486196', data.email || '');
-      body.append('entry.470407525', data.phone || '');
-      body.append('entry.13403050', data.domain || data.position || '');
-      body.append('entry.1413795735', data.duration || '');
-      
-      const details = [
-        data.internshipType && `Type: ${data.internshipType}`,
-        data.resume && `Resume: ${data.resume}`,
-        data.message && `Message: ${data.message}`
-      ].filter(Boolean).join(' | ');
-      body.append('entry.1929003976', details || 'N/A');
-    } else if (data.type === 'career') {
+    // The user provided a single unified DOM for Careers (which includes Internship Type)
+    if (data.type === 'career' || data.type === 'internship') {
       formUrl = 'https://docs.google.com/forms/u/0/d/e/1FAIpQLSdC2Z5tERW2sYtjzJN4VP-xCss-aWr1WxaLLqv2gvXCiLwH_Q/formResponse';
       body.append('entry.1658472497', data.name || '');
       body.append('entry.862200673', data.email || '');
-      body.append('entry.435392044', data.phone || '');
-      body.append('entry.153460694', data.position || '');
-      body.append('entry.1608247299', data.resume || '');
-      body.append('entry.1724599138', data.message || 'N/A');
+      body.append('entry.435392044', data.domain || data.position || 'General'); // Focused Area
+      body.append('entry.153460694', data.internshipType || data.employmentType || 'N/A'); // Internship Type
+      body.append('entry.1608247299', data.resume || 'No Resume Provided');
     } else {
-      // Contact Form Mapping
+      // New Contact Form Mapping
       formUrl = 'https://docs.google.com/forms/u/0/d/e/1FAIpQLSc37vKm2W-WC47FvzG64RV14UBiM7MGvXXT7OSCdCSCTikgqA/formResponse';
       body.append('entry.1152972438', data.name || '');
       body.append('entry.129797516', data.email || '');
