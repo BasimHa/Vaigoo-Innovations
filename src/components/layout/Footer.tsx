@@ -30,12 +30,6 @@ export const Footer = () => {
               We are a next-generation digital solutions technology company. We specialize in building intelligent systems, AI-driven applications, and scalable platforms that empower modern businesses to reach their highest potential.
             </p>
             <div className="flex space-x-4">
-              <button onClick={() => window.open("https://vaigoo-innovations.vercel.app", "_blank")} className="w-10 h-10 rounded-full bg-white/50 border border-slate-200 shadow-sm flex items-center justify-center text-slate-600 hover:text-primary-blue transition-all duration-300 hover:scale-110 cursor-pointer">
-                <Globe size={20} />
-              </button>
-              <button onClick={() => window.open("https://wa.me/9037049531", "_blank")} className="w-10 h-10 rounded-full bg-white/50 border border-slate-200 shadow-sm flex items-center justify-center text-slate-600 hover:text-primary-blue transition-all duration-300 hover:scale-110 cursor-pointer">
-                <MessageCircle size={20} />
-              </button>
               <button onClick={() => window.open("https://www.linkedin.com/in/vaigoo-innovations-7646123ba/", "_blank")} className="w-10 h-10 rounded-full bg-white/50 border border-slate-200 shadow-sm flex items-center justify-center text-slate-600 hover:text-primary-blue transition-all duration-300 hover:scale-110 cursor-pointer">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" /><rect width="4" height="12" x="2" y="9" /><circle cx="4" cy="4" r="2" /></svg>
               </button>
