@@ -172,6 +172,8 @@ export default function CareersPage() {
     // Convert to unified API format
     const nameVal = nativeData.get("name");
     const emailVal = nativeData.get("email");
+    const phoneVal = nativeData.get("phone");
+    const messageVal = nativeData.get("message");
     const resumeLinkVal = nativeData.get("resumeLink");
     const focusedAreaVal = nativeData.get("focusedArea");
     const internshipTypeVal = nativeData.get("internshipType"); // New field
@@ -191,6 +193,8 @@ export default function CareersPage() {
           type: 'career',
           name: nameVal,
           email: emailVal,
+          phone: phoneVal,
+          message: messageVal,
           position: focusedArea === '__other_option__' ? otherRole : focusedArea,
           employmentType: 'Full-time', // For careers page
           internshipType: internshipTypeVal || '',
@@ -241,6 +245,13 @@ export default function CareersPage() {
              <motion.div variants={fadeUp}>
                <label className="block text-sm font-medium text-slate-700 mb-2">Email Address</label>
                <input type="email" name="email" required className="w-full px-4 py-3.5 rounded-xl bg-white/80 backdrop-blur-sm border border-slate-200/80 focus:outline-none focus:ring-2 focus:ring-primary-blue/50 focus:border-primary-blue transition-all duration-300 shadow-sm placeholder-slate-400" placeholder="jane@example.com" />
+             </motion.div>
+           </div>
+
+           <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
+             <motion.div variants={fadeUp}>
+               <label className="block text-sm font-medium text-slate-700 mb-2">Phone Number</label>
+               <input type="tel" name="phone" required className="w-full px-4 py-3.5 rounded-xl bg-white/80 backdrop-blur-sm border border-slate-200/80 focus:outline-none focus:ring-2 focus:ring-primary-blue/50 focus:border-primary-blue transition-all duration-300 shadow-sm placeholder-slate-400" placeholder="+91 90000 00000" />
              </motion.div>
            </div>
            
@@ -302,6 +313,17 @@ export default function CareersPage() {
                placeholder="https://drive.google.com/..." 
              />
              <p className="text-xs text-slate-500 mt-2 ml-1">Please provide a public Google Drive or Website URL to your resume.</p>
+           </motion.div>
+
+           <motion.div variants={fadeUp}>
+             <label className="block text-sm font-medium text-slate-700 mb-2">Message / Cover Letter</label>
+             <textarea 
+               name="message" 
+               required 
+               rows={4}
+               className="w-full px-4 py-4 rounded-xl bg-white/80 backdrop-blur-sm border border-slate-200/80 focus:outline-none focus:ring-2 focus:ring-primary-blue/50 focus:border-primary-blue transition-all duration-300 shadow-sm placeholder-slate-400 resize-none" 
+               placeholder="Why are you a good fit for this role?" 
+             />
            </motion.div>
 
            <motion.div variants={fadeUp} className="pt-4">

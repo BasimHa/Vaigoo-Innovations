@@ -5,27 +5,34 @@ const APPS_SCRIPT_URL = process.env.NEXT_PUBLIC_APPS_SCRIPT_URL || '';
 
 async function submitToGoogleForm(data: any) {
   try {
-    const isCareer = data.type === 'career';
-    const isInternship = data.type === 'internship';
-    const formUrl = (isCareer || isInternship)
-      ? 'https://docs.google.com/forms/u/0/d/e/1FAIpQLSdC2Z5tERW2sYtjzJN4VP-xCss-aWr1WxaLLqv2gvXCiLwH_Q/formResponse'
-      : 'https://docs.google.com/forms/u/0/d/e/1FAIpQLSc37vKm2W-WC47FvzG64RV14UBiM7MGvXXT7OSCdCSCTikgqA/formResponse';
-
+    let formUrl = '';
     const body = new URLSearchParams();
-    
-    if (isCareer || isInternship) {
+
+    if (data.type === 'internship') {
+      formUrl = 'https://docs.google.com/forms/u/0/d/e/1FAIpQLSe-z7QqXpLyX0iGRAy2Gnw9RUamrw0DJB8flt-A_AxtoE-tqQ/formResponse';
+      body.append('entry.1214236803', data.name || '');
+      body.append('entry.610486196', data.email || '');
+      body.append('entry.470407525', data.phone || '');
+      body.append('entry.13403050', data.domain || data.position || '');
+      body.append('entry.1413795735', data.duration || '');
+      
+      const details = [
+        data.internshipType && `Type: ${data.internshipType}`,
+        data.resume && `Resume: ${data.resume}`,
+        data.message && `Message: ${data.message}`
+      ].filter(Boolean).join(' | ');
+      body.append('entry.1929003976', details || 'N/A');
+    } else if (data.type === 'career') {
+      formUrl = 'https://docs.google.com/forms/u/0/d/e/1FAIpQLSdC2Z5tERW2sYtjzJN4VP-xCss-aWr1WxaLLqv2gvXCiLwH_Q/formResponse';
       body.append('entry.1658472497', data.name || '');
       body.append('entry.862200673', data.email || '');
       body.append('entry.435392044', data.phone || '');
-      body.append('entry.153460694', data.position || data.domain || '');
+      body.append('entry.153460694', data.position || '');
       body.append('entry.1608247299', data.resume || '');
-      
-      const messageContent = isInternship 
-        ? `Duration: ${data.duration} | Type: ${data.internshipType} | Details: ${data.message || 'N/A'}`
-        : data.message || '';
-      body.append('entry.1724599138', messageContent);
+      body.append('entry.1724599138', data.message || 'N/A');
     } else {
       // Contact Form Mapping
+      formUrl = 'https://docs.google.com/forms/u/0/d/e/1FAIpQLSc37vKm2W-WC47FvzG64RV14UBiM7MGvXXT7OSCdCSCTikgqA/formResponse';
       body.append('entry.1152972438', data.name || '');
       body.append('entry.129797516', data.email || '');
       body.append('entry.1015696628', data.phone || '');
@@ -82,7 +89,7 @@ export async function POST(req: Request) {
     }
 
     // 3. Backup: Send to direct Google Form directly (Requested re-integration)
-    submitToGoogleForm(data);
+    await submitToGoogleForm(data);
 
     if (result.error) return NextResponse.json({ error: result.error }, { status: 500 });
     return NextResponse.json({ success: true, data: result.data });

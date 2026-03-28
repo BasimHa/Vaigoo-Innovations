@@ -1,433 +1,485 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import JobsManager from './JobsManager';
-import { Search, RefreshCw, Mail, Briefcase, GraduationCap, CheckCircle, Clock, XCircle, Lock, Eye, Download, Settings, Calendar, Video } from 'lucide-react';
+import { Search, RefreshCw, Mail, Briefcase, GraduationCap, Clock, CheckCircle2, XCircle, Lock, LayoutDashboard, Calendar, Video, ChevronRight, X, LogOut } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { supabase } from '@/lib/supabase';
 
-type Submission = {
-  id: string;
-  type: "contact" | "career" | "internship";
-  name: string;
-  email: string;
-  phone: string | null;
-  message: string | null;
-  position: string | null;
-  domain: string | null; // Added
-  employmentType: string | null;
-  duration: string | null;
-  internshipType: string | null; // Added
-  paidType: string | null;
-  resume: string | null;
-  status: "new" | "reviewed" | "shortlisted" | "rejected"; // Updated
-  interviewDate: string | null; // Added
-  meetLink: string | null; // Added
-  createdAt: string;
-};
+type TabType = 'contact' | 'career' | 'internship';
 
 export default function AdminPortal() {
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [authError, setAuthError] = useState('');
-  
-  const [submissions, setSubmissions] = useState<Submission[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState<'all' | 'contact' | 'career' | 'internship' | 'jobs'>('all');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedSub, setSelectedSub] = useState<Submission | null>(null);
+  const [token, setToken] = useState('');
 
-  const fetchSubmissions = async (pw: string) => {
+  const [activeTab, setActiveTab] = useState<TabType>('career');
+  const [submissions, setSubmissions] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedSub, setSelectedSub] = useState<any | null>(null);
+
+  // Shortlist Modal State
+  const [showShortlistModal, setShowShortlistModal] = useState(false);
+  const [shortlistTarget, setShortlistTarget] = useState<any>(null);
+  const [interviewDate, setInterviewDate] = useState('');
+  const [meetLink, setMeetLink] = useState('');
+  const [postingStatus, setPostingStatus] = useState(false);
+
+  const fetchSubmissions = async (sessionToken: string, tab: TabType) => {
     setLoading(true);
     setAuthError('');
     try {
-      const res = await fetch(`/api/submissions?type=${activeTab}`, {
-        headers: {
-          'Authorization': `Bearer ${pw}`
-        }
+      const res = await fetch(`/api/admin-dashboard?type=${tab}`, {
+        headers: { 'Authorization': `Bearer ${sessionToken}` }
       });
+      const result = await res.json();
+
       if (res.ok) {
-        const data = await res.json();
-        setSubmissions(data.data || []);
+        setSubmissions(result.data || []);
         setIsAuthenticated(true);
+        setToken(sessionToken);
       } else {
-        const errData = await res.json().catch(() => ({}));
-        if (res.status === 401) {
-          setAuthError('Invalid Passkey');
-        } else {
-          setAuthError(`Database Error: ${errData.error || 'Check Supabase Keys & Schema'}`);
-        }
-        setIsAuthenticated(false);
+        setAuthError(result.error || 'Access Denied');
+        if (res.status === 401) setIsAuthenticated(false);
       }
     } catch (e) {
-      setAuthError('Network error');
+      setAuthError('Network error connecting to dashboard');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    fetchSubmissions(password);
-  };
+    setLoading(true);
+    setAuthError('');
 
-  const updateStatus = async (id: string, newStatus: string) => {
+    if (!supabase) {
+      setAuthError('Authentication Error: Supabase configuration is missing. Please add your environment variables.');
+      setLoading(false);
+      return;
+    }
+
     try {
-      const res = await fetch('/api/submissions', {
-        method: 'PATCH',
-        headers: {
-          'Authorization': `Bearer ${password}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ id, status: newStatus })
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
       });
-      if (res.ok) {
-         setSubmissions(prev => prev.map(s => s.id === id ? { ...s, status: newStatus as any } : s));
-         if (selectedSub?.id === id) {
-           setSelectedSub({ ...selectedSub, status: newStatus as any });
-         }
+
+      if (error) {
+        setAuthError(error.message);
+        setLoading(false);
+        return;
       }
-    } catch (e) {
-      console.error(e);
+
+      if (data.session) {
+        fetchSubmissions(data.session.access_token, activeTab);
+      }
+    } catch (err) {
+      setAuthError('An unexpected error occurred during login');
+      setLoading(false);
     }
   };
 
+  const handleLogout = async () => {
+    if (supabase) await supabase.auth.signOut();
+    setIsAuthenticated(false);
+    setToken('');
+    setPassword('');
+    setEmail('');
+  };
+
   useEffect(() => {
-    if (isAuthenticated) {
-      fetchSubmissions(password);
+    if (isAuthenticated && token) {
+      fetchSubmissions(token, activeTab);
+      setSelectedSub(null);
     }
   }, [activeTab]);
 
-  useEffect(() => {
-    if (selectedSub) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
+  const updateStatus = async (email: string, newStatus: string, modalDate?: string, modalLink?: string) => {
+    setPostingStatus(true);
+    try {
+      const res = await fetch('/api/admin-dashboard', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          type: activeTab,
+          email,
+          status: newStatus,
+          interviewDate: modalDate || null,
+          meetLink: modalLink || null
+        })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        // Update local state instantly to reflect UI
+        setSubmissions(prev => prev.map(s => s.Email === email ? { ...s, Status: newStatus } : s));
+        if (selectedSub?.Email === email) {
+          setSelectedSub({ ...selectedSub, Status: newStatus });
+        }
+        setShowShortlistModal(false);
+      } else {
+        alert("Failed to update status: " + (data.error || "Unknown"));
+      }
+    } catch (e) {
+      alert("Network err updating status");
+    } finally {
+      setPostingStatus(false);
     }
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [selectedSub]);
+  };
+
+  const handleStatusChangeClick = (sub: any, newStatus: string) => {
+    if (newStatus === 'Shortlisted') {
+      setShortlistTarget(sub);
+      setInterviewDate('');
+      setMeetLink('');
+      setShowShortlistModal(true);
+    } else {
+      updateStatus(sub.Email, newStatus);
+    }
+  };
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4">
-        <div className="bg-white p-8 rounded-3xl shadow-xl max-w-sm w-full border border-slate-100">
-           <div className="w-14 h-14 bg-primary-blue/10 text-primary-blue rounded-2xl flex items-center justify-center mb-6">
-             <Lock size={26} />
-           </div>
-           <h1 className="text-2xl font-bold text-slate-900 mb-2">Admin Access</h1>
-           <p className="text-slate-500 mb-8 text-sm">Please enter the security passkey to access the unified submission dashboard.</p>
-           <form onSubmit={handleLogin}>
-             <input
-               type="password"
-               value={password}
-               onChange={e => setPassword(e.target.value)}
-               className="w-full px-4 py-3.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-primary-blue/50 focus:border-primary-blue transition-colors mb-4"
-               placeholder="Enter passkey..."
-               required
-             />
-             {authError && <p className="text-red-500 text-sm mb-4 bg-red-50 p-2 rounded-lg">{authError}</p>}
-             <button type="submit" disabled={loading} className="w-full bg-slate-900 text-white font-bold py-3.5 rounded-xl hover:bg-slate-800 transition shadow-md disabled:opacity-70">
-               {loading ? 'Verifying...' : 'Access Dashboard'}
-             </button>
-           </form>
+      <div className="min-h-screen bg-[#000000] flex flex-col items-center justify-center p-4 font-sans">
+        <div className="bg-[#0a0a0a] border border-[#1a1a1a] p-10 rounded-3xl shadow-2xl max-w-sm w-full">
+          <div className="w-16 h-16 bg-[#111111] border border-[#222222] text-white rounded-2xl flex items-center justify-center mb-6">
+            <Lock size={28} />
+          </div>
+          <h1 className="text-2xl font-semibold text-white mb-2 tracking-tight">System Admin</h1>
+          <p className="text-[#666666] mb-8 text-sm leading-relaxed">Secure environment. Authentic workspace credentials required.</p>
+          <form onSubmit={handleLogin} className="space-y-4">
+            <input
+              type="email"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              className="w-full px-5 py-4 rounded-xl bg-[#111111] border border-[#222222] text-white focus:outline-none focus:border-[#444444] transition-colors placeholder-[#555555]"
+              placeholder="Official Email"
+              required
+            />
+            <input
+              type="password"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              className="w-full px-5 py-4 rounded-xl bg-[#111111] border border-[#222222] text-white focus:outline-none focus:border-[#444444] transition-colors placeholder-[#555555]"
+              placeholder="Enter passkey"
+              required
+            />
+            {authError && <p className="text-red-400 text-xs">{authError}</p>}
+            <button type="submit" disabled={loading} className="w-full bg-white text-black font-semibold py-4 rounded-xl hover:bg-[#e0e0e0] transition-colors disabled:opacity-50 mt-2">
+              {loading ? 'Authenticating...' : 'Enter Dashboard'}
+            </button>
+          </form>
         </div>
       </div>
     );
   }
 
-  const filteredSubmissions = submissions.filter(s => 
-    s.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    s.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (s.position?.toLowerCase().includes(searchQuery.toLowerCase())) ||
-    (s.domain?.toLowerCase().includes(searchQuery.toLowerCase()))
-  );
+  const filteredSubmissions = submissions.filter(s => {
+    const term = searchQuery.toLowerCase();
+    return (s.Name?.toLowerCase().includes(term) || s.Email?.toLowerCase().includes(term));
+  }).reverse(); // Most recent first (assuming sheet appends to bottom)
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
-      {/* Header */}
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-[72px] flex items-center justify-between">
-          <div className="flex items-center gap-3">
-             <div className="w-10 h-10 bg-gradient-primary text-white rounded-xl flex items-center justify-center shadow-md shrink-0">
-               <span className="font-bold text-sm tracking-widest">VI</span>
-             </div>
-             <h1 className="font-bold text-slate-900 text-lg hidden sm:block truncate">Unified Submissions</h1>
+    <div className="min-h-screen bg-[#000000] text-[#a1a1aa] flex font-sans selection:bg-[#333333] selection:text-white relative">
+
+      {/* Sidebar */}
+      <aside className="w-64 bg-[#050505] border-r border-[#151515] flex flex-col shrink-0 h-screen sticky top-0 hidden md:flex">
+        <div className="p-8 flex items-center gap-3">
+          <div className="w-8 h-8 bg-white text-black rounded-lg flex items-center justify-center">
+            <span className="font-bold text-[12px] tracking-tighter">VI</span>
+          </div>
+          <span className="text-white font-semibold tracking-tight text-sm">Dashboard</span>
+        </div>
+        <div className="px-4 space-y-1">
+          <p className="px-4 text-[10px] font-bold text-[#444444] uppercase tracking-widest mb-3 mt-4">Modules</p>
+          {[
+            { id: 'career', label: 'Careers', icon: <Briefcase size={16} /> },
+            { id: 'internship', label: 'Internships', icon: <GraduationCap size={16} /> },
+            { id: 'contact', label: 'Contacts', icon: <Mail size={16} /> },
+          ].map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as TabType)}
+              className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl transition-all ${activeTab === tab.id ? 'bg-[#151515] text-white border border-[#222222]' : 'text-[#888888] hover:text-white hover:bg-[#0a0a0a] border border-transparent'}`}
+            >
+              {tab.icon} {tab.label}
+            </button>
+          ))}
+        </div>
+        <div className="mt-auto px-4 pb-8">
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl text-red-400 hover:text-red-300 hover:bg-red-950/20 border border-transparent transition-all"
+          >
+            <LogOut size={16} /> Logout
+          </button>
+        </div>
+      </aside>
+
+      {/* Main Content */}
+      <main className="flex-1 flex flex-col h-screen overflow-hidden">
+        {/* Header */}
+        <header className="h-[80px] border-b border-[#151515] bg-[#050505]/80 backdrop-blur-md flex items-center justify-between px-8 shrink-0">
+          <div className="flex items-center gap-4">
+            <h2 className="text-xl font-semibold text-white tracking-tight capitalize">{activeTab} Entries</h2>
+            <div className="hidden sm:flex items-center gap-2 text-xs font-semibold px-2 py-1 bg-[#111111] border border-[#222222] rounded-md text-[#888888]">
+              {submissions.length} Total Records
+            </div>
           </div>
           <div className="flex items-center gap-4">
-             <div className="relative hidden md:block">
-               <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-               <input
-                 type="text"
-                 placeholder="Search names, emails..."
-                 value={searchQuery}
-                 onChange={e => setSearchQuery(e.target.value)}
-                 className="pl-10 pr-4 py-2.5 bg-slate-100 border border-transparent rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue/20 focus:border-primary-blue/30 w-72 transition-all"
-               />
-             </div>
-             <button onClick={() => fetchSubmissions(password)} className="p-2.5 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-colors">
-               <RefreshCw size={20} className={loading ? "animate-spin text-primary-blue" : ""} />
-             </button>
+            <div className="relative">
+              <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#555555]" />
+              <input
+                type="text"
+                placeholder="Search records..."
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                className="pl-10 pr-4 py-2 bg-[#0a0a0a] border border-[#1a1a1a] rounded-lg text-sm focus:outline-none focus:border-[#333333] text-white w-64 transition-all placeholder-[#444444]"
+              />
+            </div>
+            <button onClick={() => fetchSubmissions(password, activeTab)} className="w-9 h-9 flex items-center justify-center bg-[#111111] hover:bg-[#1a1a1a] border border-[#222222] rounded-lg text-white transition-all">
+              <RefreshCw size={16} className={loading ? "animate-spin" : ""} />
+            </button>
           </div>
-        </div>
-      </header>
+        </header>
 
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col lg:flex-row gap-8">
-        
-        {/* Sidebar Tabs */}
-        <div className="w-full lg:w-72 shrink-0">
-          <nav className="flex lg:flex-col gap-2 overflow-x-auto lg:overflow-visible pb-4 lg:pb-0 scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0">
-            {[
-              { id: 'all', label: 'All Submissions', icon: <CheckCircle size={18} /> },
-              { id: 'contact', label: 'Contact Messages', icon: <Mail size={18} /> },
-              { id: 'career', label: 'Careers', icon: <Briefcase size={18} /> },
-              { id: 'internship', label: 'Internships', icon: <GraduationCap size={18} /> },
-              { id: 'jobs', label: 'Manage Jobs', icon: <Settings size={18} /> },
-            ].map(tab => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)}
-                className={`flex items-center gap-3 px-5 py-4 lg:py-3.5 rounded-2xl lg:rounded-xl font-bold lg:font-medium text-sm transition-all whitespace-nowrap active:scale-95 ${activeTab === tab.id ? 'bg-slate-900 text-white shadow-lg shadow-slate-900/20' : 'bg-white lg:bg-transparent border border-slate-100 lg:border-transparent text-slate-600 hover:bg-slate-200/50 hover:text-slate-900'}`}
-              >
-                <span className={`${activeTab === tab.id ? 'text-primary-blue' : 'text-slate-400'}`}>{tab.icon}</span>
-                {tab.label}
-              </button>
-            ))}
-          </nav>
-        </div>
-
-        {/* Content Area */}
-        {activeTab === 'jobs' ? (
-          <JobsManager password={password} />
-        ) : (
-          <div className="flex-1 bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden flex flex-col min-h-[500px]">
-           {/* Mobile Search */}
-           <div className="p-4 border-b border-slate-100 md:hidden">
-              <div className="relative">
-                 <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                 <input
-                   type="text"
-                   placeholder="Search..."
-                   value={searchQuery}
-                   onChange={e => setSearchQuery(e.target.value)}
-                   className="w-full pl-10 pr-4 py-2.5 bg-slate-100 rounded-xl text-sm focus:outline-none"
-                 />
-               </div>
-           </div>
-
-            {loading && submissions.length === 0 ? (
-             <div className="flex-1 flex flex-col items-center justify-center text-slate-400">
-                <RefreshCw size={32} className="animate-spin mb-4 text-slate-300" />
-                <p>Loading database records...</p>
-             </div>
-            ) : submissions.length === 0 ? (
-             <div className="flex-1 flex flex-col items-center justify-center text-slate-500 py-20">
-               <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4 text-slate-300">
-                 <Search size={24} />
-               </div>
-               <p className="font-medium text-slate-700 mb-1">No Submissions Found</p>
-               <p className="text-sm">There are no records in this category yet.</p>
-             </div>
-            ) : (
-             <div className="relative flex-1 group/table">
-               {/* Mobile Scroll Indicator */}
-               <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white to-transparent pointer-events-none z-10 opacity-0 group-hover/table:opacity-100 lg:hidden transition-opacity" />
-               <div className="overflow-x-auto flex-1 scrollbar-thin">
-                 <table className="w-full text-left border-collapse min-w-[700px] lg:min-w-[800px]">
-                 <thead>
-                   <tr className="bg-slate-50/80 border-b border-slate-200 text-xs uppercase tracking-wider text-slate-500">
-                     <th className="px-6 py-4 font-semibold rounded-tl-3xl">Candidate / User</th>
-                     <th className="px-6 py-4 font-semibold">Type</th>
-                     <th className="px-6 py-4 font-semibold">Role / Pos</th>
-                     <th className="px-6 py-4 font-semibold">Status</th>
-                     <th className="px-6 py-4 font-semibold">Date</th>
-                     <th className="px-6 py-4 font-semibold text-right rounded-tr-3xl">Action</th>
-                   </tr>
-                 </thead>
-                 <tbody className="divide-y divide-slate-100">
-                   {filteredSubmissions.map(sub => (
-                     <tr key={sub.id} className="hover:bg-slate-50/80 transition-colors cursor-pointer group" onClick={() => setSelectedSub(sub)}>
-                       <td className="px-6 py-4">
-                         <p className="font-bold text-slate-900 mb-0.5">{sub.name}</p>
-                         <p className="text-xs text-slate-500 font-medium">{sub.email}</p>
-                       </td>
-                       <td className="px-6 py-4">
-                         <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wider ${sub.type === 'contact' ? 'bg-purple-100 text-purple-700' : sub.type === 'career' ? 'bg-blue-100 text-blue-700' : 'bg-emerald-100 text-emerald-700'}`}>
-                           {sub.type}
-                         </span>
-                       </td>
-                       <td className="px-6 py-4">
-                          <p className="text-sm font-medium text-slate-700 line-clamp-1">{sub.position || sub.domain || '—'}</p>
-                       </td>
-                       <td className="px-6 py-4">
-                         <StatusBadge status={sub.status} />
-                       </td>
-                       <td className="px-6 py-4 text-sm font-medium text-slate-500">
-                         {new Date(sub.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
-                       </td>
-                       <td className="px-6 py-4 text-right">
-                         <button className="text-slate-400 group-hover:text-primary-blue bg-white border border-slate-200 p-2.5 rounded-xl shadow-sm hover:shadow-md transition-all" onClick={(e) => { e.stopPropagation(); setSelectedSub(sub); }}>
-                           <Eye size={18} />
-                         </button>
-                       </td>
-                     </tr>
-                   ))}
-                 </tbody>
-               </table>
-             </div>
-           </div>
+        {/* Data Table Area */}
+        <div className="flex-1 overflow-auto p-8 relative">
+          {loading && submissions.length === 0 ? (
+            <div className="absolute inset-0 flex items-center justify-center text-[#555555] gap-3">
+              <RefreshCw size={20} className="animate-spin" /> Loading real-time data from Sheets...
+            </div>
+          ) : submissions.length === 0 ? (
+            <div className="absolute inset-0 flex flex-col items-center justify-center text-[#555555]">
+              <LayoutDashboard size={40} className="mb-4 text-[#222]" />
+              <p>No records found for this module.</p>
+            </div>
+          ) : (
+            <div className="bg-[#050505] border border-[#151515] rounded-2xl overflow-hidden w-full max-w-[1400px]">
+              <table className="w-full text-left border-collapse text-sm whitespace-nowrap">
+                <thead className="bg-[#0a0a0a] text-[#666666] border-b border-[#151515]">
+                  <tr>
+                    <th className="px-6 py-4 font-medium tracking-tight">Applicant</th>
+                    {activeTab === 'career' && <th className="px-6 py-4 font-medium tracking-tight">Position</th>}
+                    {activeTab === 'internship' && <th className="px-6 py-4 font-medium tracking-tight">Domain / Duration</th>}
+                    <th className="px-6 py-4 font-medium tracking-tight">Contact</th>
+                    {activeTab !== 'contact' && <th className="px-6 py-4 font-medium tracking-tight">Status</th>}
+                    <th className="px-6 py-4 font-medium tracking-tight text-right text-xs uppercase tracking-widest">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#151515]">
+                  {filteredSubmissions.map(sub => (
+                    <tr key={sub._rowIndex || Math.random()} className="hover:bg-[#0a0a0a]/50 transition-colors group">
+                      <td className="px-6 py-4">
+                        <p className="font-semibold text-white tracking-tight leading-tight">{sub.Name || 'Unknown'}</p>
+                        <p className="text-xs text-[#666666] mt-0.5">{sub.Timestamp ? new Date(sub.Timestamp).toLocaleDateString() : 'N/A'}</p>
+                      </td>
+                      {activeTab === 'career' && (
+                        <td className="px-6 py-4">
+                          <span className="px-2.5 py-1 bg-[#111111] border border-[#222222] text-[#aaaaaa] rounded-md text-xs">{sub["Position Applying"] || 'General'}</span>
+                        </td>
+                      )}
+                      {activeTab === 'internship' && (
+                        <td className="px-6 py-4">
+                          <p className="text-[#cccccc]">{sub.Domain || 'General'}</p>
+                          <p className="text-xs text-[#666666] mt-0.5">{sub.Duration || 'N/A'}</p>
+                        </td>
+                      )}
+                      <td className="px-6 py-4">
+                        <p className="text-[#a1a1aa] text-xs">{sub.Email}</p>
+                        <p className="text-xs text-[#555555] mt-0.5">{sub.Phone}</p>
+                      </td>
+                      {activeTab !== 'contact' && (
+                        <td className="px-6 py-4">
+                          <StatusPill status={sub.Status} />
+                        </td>
+                      )}
+                      <td className="px-6 py-4 text-right">
+                        <button
+                          onClick={() => setSelectedSub(sub)}
+                          className="px-4 py-2 bg-[#111111] hover:bg-white hover:text-black border border-[#222222] text-white rounded-lg text-xs font-semibold transition-all opacity-0 group-hover:opacity-100 focus:opacity-100"
+                        >
+                          Review
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </div>
-        )}
-      </main>      {/* Detail Modal Layer */}
-      <AnimatePresence mode="wait">
+      </main>
+
+      {/* Slide-over Detail Panel */}
+      <AnimatePresence>
         {selectedSub && (
-          <div className="fixed inset-0 z-[99999] flex items-stretch md:items-center justify-end md:p-6 isolate pointer-events-none">
-            {/* Backdrop with Fade */}
-            <motion.div 
-              initial={{ opacity: 0 }} 
-              animate={{ opacity: 1 }} 
-              exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-slate-900/60 backdrop-blur-md pointer-events-auto"
+          <>
+            <motion.div
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               onClick={() => setSelectedSub(null)}
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40"
             />
-            
-            {/* Side Panel Modal */}
-            <motion.div 
-              initial={{ x: '100%', opacity: 0 }} 
-              animate={{ x: 0, opacity: 1 }} 
-              exit={{ x: '100%', opacity: 0 }}
-              transition={{ type: 'spring', damping: 30, stiffness: 250 }}
-              className="relative bg-white w-full sm:w-[500px] h-[100dvh] md:h-auto md:max-h-[85vh] md:rounded-[32px] shadow-2xl flex flex-col z-[100000] overflow-hidden border-l md:border border-slate-100 pointer-events-auto"
+            <motion.div
+              initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }} transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="fixed right-0 top-0 h-screen w-full max-w-lg bg-[#050505] border-l border-[#1a1a1a] z-50 overflow-y-auto"
             >
-              {/* Responsive Header */}
-              <div className="p-6 md:p-8 bg-white/80 backdrop-blur-xl border-b border-slate-100 flex items-start justify-between sticky top-0 z-[110]">
-                <div className="space-y-2 truncate flex-1 pr-4">
-                  <div className="flex flex-wrap items-center gap-2">
-                     <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-widest ${selectedSub.type === 'contact' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}`}>
-                        {selectedSub.type}
-                     </span>
-                     <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider tabular-nums">
-                       {new Date(selectedSub.createdAt).toLocaleString()}
-                     </span>
-                  </div>
-                  <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900 leading-tight truncate">{selectedSub.name}</h2>
+              <div className="p-8 border-b border-[#1a1a1a] flex justify-between items-start sticky top-0 bg-[#050505]/90 backdrop-blur-md z-10">
+                <div>
+                  <h3 className="text-2xl font-semibold text-white tracking-tight leading-none mb-2">{selectedSub.Name}</h3>
+                  <a href={`mailto:${selectedSub.Email}`} className="text-[#888888] text-sm hover:text-white transition-colors">{selectedSub.Email}</a>
                 </div>
-                
-                {/* Robust Close Button */}
-                <button 
-                  onClick={() => setSelectedSub(null)} 
-                  className="w-12 h-12 flex items-center justify-center bg-slate-50 text-slate-900 hover:bg-slate-100 hover:text-red-500 rounded-full shadow-sm hover:shadow-md transition-all active:scale-90"
-                  aria-label="Close"
-                >
-                  <XCircle size={32} strokeWidth={1.5} />
+                <button onClick={() => setSelectedSub(null)} className="p-2 bg-[#111] hover:bg-[#222] rounded-full text-white transition-colors">
+                  <X size={20} />
                 </button>
               </div>
 
-              <div className="p-6 md:p-8 overflow-y-auto flex-1 space-y-8 scrollbar-hide">
-                {/* Contact Section */}
-                <section>
-                  <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">Contact Profile</h4>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div className="group bg-slate-50 p-4 rounded-2xl border border-slate-100/50 hover:border-primary-blue/30 transition-colors flex items-center gap-4">
-                      <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm text-slate-400 group-hover:text-primary-blue">
-                         <Mail size={18} />
-                      </div>
-                      <div className="overflow-hidden">
-                        <p className="text-[10px] text-slate-400 font-bold uppercase">Email</p>
-                        <a href={`mailto:${selectedSub.email}`} className="text-sm text-slate-900 font-extrabold truncate block hover:underline">{selectedSub.email}</a>
-                      </div>
-                    </div>
-                    {selectedSub.phone && (
-                       <div className="group bg-slate-50 p-4 rounded-2xl border border-slate-100/50 hover:border-primary-blue/30 transition-colors flex items-center gap-4">
-                          <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm text-slate-400 group-hover:text-primary-blue text-sm font-black">
-                             #
-                          </div>
-                         <div className="overflow-hidden">
-                           <p className="text-[10px] text-slate-400 font-bold uppercase">Phone</p>
-                           <a href={`tel:${selectedSub.phone}`} className="text-sm text-slate-900 font-extrabold truncate block hover:underline">{selectedSub.phone}</a>
-                         </div>
-                       </div>
-                    )}
+              <div className="p-8 space-y-8">
+                {/* Meta Attributes */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="p-4 bg-[#0a0a0a] border border-[#1a1a1a] rounded-xl">
+                    <p className="text-[10px] text-[#555] uppercase tracking-widest font-bold mb-1">Phone</p>
+                    <p className="text-[#ececec] text-sm">{selectedSub.Phone || 'N/A'}</p>
                   </div>
-                </section>
-
-                <section>
-                  <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">Message / Application</h4>
-                  <div className="space-y-4">
-                    {/* Position/Header Context */}
-                    {(selectedSub.position || selectedSub.domain) && (
-                       <div className="bg-slate-900 p-5 rounded-2xl text-white shadow-xl shadow-slate-900/10 mb-4">
-                          <p className="text-[10px] text-slate-400 font-bold uppercase mb-1">Applying for</p>
-                          <p className="font-extrabold text-lg md:text-xl leading-tight">{selectedSub.position || selectedSub.domain}</p>
-                       </div>
-                    )}
-                    
-                    <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100 text-slate-700 text-base leading-relaxed whitespace-pre-wrap font-medium">
-                      {selectedSub.message || 'No additional message provided.'}
+                  <div className="p-4 bg-[#0a0a0a] border border-[#1a1a1a] rounded-xl">
+                    <p className="text-[10px] text-[#555] uppercase tracking-widest font-bold mb-1">Row Idx</p>
+                    <p className="text-[#ececec] text-sm">#{selectedSub._rowIndex}</p>
+                  </div>
+                  {activeTab === 'career' && (
+                    <div className="p-4 bg-[#0a0a0a] border border-[#1a1a1a] rounded-xl col-span-2">
+                      <p className="text-[10px] text-[#555] uppercase tracking-widest font-bold mb-1">Applying For</p>
+                      <p className="text-white font-semibold">{selectedSub["Position Applying"] || 'N/A'}</p>
                     </div>
+                  )}
+                  {activeTab === 'internship' && (
+                    <>
+                      <div className="p-4 bg-[#0a0a0a] border border-[#1a1a1a] rounded-xl">
+                        <p className="text-[10px] text-[#555] uppercase tracking-widest font-bold mb-1">Domain</p>
+                        <p className="text-white font-semibold">{selectedSub.Domain || 'N/A'}</p>
+                      </div>
+                      <div className="p-4 bg-[#0a0a0a] border border-[#1a1a1a] rounded-xl">
+                        <p className="text-[10px] text-[#555] uppercase tracking-widest font-bold mb-1">Duration</p>
+                        <p className="text-white font-semibold">{selectedSub.Duration || 'N/A'}</p>
+                      </div>
+                    </>
+                  )}
+                </div>
 
-                    {/* Metadata Grid */}
+                {/* Message */}
+                <div>
+                  <h4 className="text-xs text-[#666] font-semibold mb-3 uppercase tracking-wider">Message / Cover Letter</h4>
+                  <div className="p-5 bg-[#0a0a0a] border border-[#1a1a1a] rounded-xl text-sm leading-relaxed text-[#cccccc] font-medium whitespace-pre-wrap">
+                    {selectedSub.Message || 'No message attached.'}
+                  </div>
+                </div>
+
+                {/* Resume Form */}
+                {selectedSub["Resume Link"] && (
+                  <a href={selectedSub["Resume Link"]} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 w-full py-4 bg-white text-black font-semibold rounded-xl hover:bg-[#e5e5e5] transition-colors">
+                    View Attached Resume
+                  </a>
+                )}
+
+                {/* Interactive Status Controls */}
+                {activeTab !== 'contact' && (
+                  <div className="pt-8 border-t border-[#1a1a1a]">
+                    <h4 className="text-xs text-[#666] font-semibold mb-4 uppercase tracking-wider">Application Decision</h4>
+                    <p className="text-xs text-[#555] mb-4">* Changing status sends automated email to applicant (unless duplicate).</p>
                     <div className="grid grid-cols-2 gap-3">
-                         {selectedSub.internshipType && (
-                           <div className="bg-amber-50 p-4 rounded-xl border border-amber-100">
-                             <p className="text-[9px] text-amber-600 font-black uppercase mb-1 tracking-wider">Internship</p>
-                             <p className="font-bold text-amber-900 text-[11px] leading-tight">{selectedSub.internshipType}</p>
-                           </div>
-                         )}
-                         {selectedSub.duration && (
-                           <div className="bg-indigo-50 p-4 rounded-xl border border-indigo-100">
-                             <p className="text-[9px] text-indigo-600 font-black uppercase mb-1 tracking-wider">Duration</p>
-                             <p className="font-bold text-indigo-900 text-[11px] leading-tight">{selectedSub.duration}</p>
-                           </div>
-                         )}
-                    </div>
-
-                    {selectedSub.resume && (
-                      <a href={selectedSub.resume} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-3 w-full py-4.5 bg-slate-900 text-white rounded-2xl font-black hover:bg-slate-800 transition-all shadow-lg active:scale-95 text-sm uppercase tracking-widest">
-                        <Download size={18} /> View Resume Portfolio
-                      </a>
-                    )}
-                  </div>
-                </section>
-
-                {/* Status Selection */}
-                <section className="pt-6 border-t border-slate-100 pb-12">
-                  <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-5">Decision Pipeline</h4>
-                  <div className="grid grid-cols-2 gap-3">
-                      {['new', 'reviewed', 'shortlisted', 'rejected'].map(st => (
+                      {['Pending', 'Reviewed', 'Shortlisted', 'Rejected'].map(st => (
                         <button
                           key={st}
-                          onClick={() => updateStatus(selectedSub.id, st)}
-                          className={`px-4 py-4 rounded-2xl text-[11px] font-black uppercase tracking-wider transition-all border-2 ${selectedSub.status === st ? 'bg-primary-blue text-white border-primary-blue shadow-lg shadow-primary-blue/20' : 'bg-white text-slate-500 border-slate-100 hover:border-slate-300'}`}
+                          disabled={postingStatus}
+                          onClick={() => handleStatusChangeClick(selectedSub, st)}
+                          className={`py-3 rounded-xl text-sm font-semibold border transition-all disabled:opacity-50 ${selectedSub.Status === st ? 'bg-[#151515] text-white border-[#333]' : 'bg-transparent text-[#666] border-[#1a1a1a] hover:border-[#444] hover:text-white'}`}
                         >
-                          {st === 'new' ? 'Pending' : st}
+                          {st}
                         </button>
                       ))}
+                    </div>
                   </div>
-                </section>
+                )}
               </div>
             </motion.div>
-          </div>
+          </>
         )}
       </AnimatePresence>
-    </div>
 
+      {/* Shortlist Setup Modal */}
+      <AnimatePresence>
+        {showShortlistModal && (
+          <>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/80 backdrop-blur-md z-[60] flex items-center justify-center p-4">
+              <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="bg-[#0a0a0a] border border-[#222] rounded-2xl w-full max-w-md overflow-hidden">
+                <div className="p-6 border-b border-[#222]">
+                  <h3 className="text-xl font-semibold text-white">Setup Interview</h3>
+                  <p className="text-sm text-[#888] mt-1">Provide meeting details for {shortlistTarget?.Name}</p>
+                </div>
+                <div className="p-6 space-y-4">
+                  <div>
+                    <label className="block text-xs text-[#666] font-semibold mb-2 uppercase">Scheduled Date/Time</label>
+                    <div className="relative">
+                      <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-[#555]" size={16} />
+                      <input
+                        type="text"
+                        value={interviewDate}
+                        onChange={e => setInterviewDate(e.target.value)}
+                        placeholder="e.g. Oct 25 at 10:00 AM"
+                        className="w-full bg-[#111] border border-[#222] text-white pl-10 pr-4 py-3 rounded-lg text-sm focus:outline-none focus:border-[#444]"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs text-[#666] font-semibold mb-2 uppercase">Google Meet Link</label>
+                    <div className="relative">
+                      <Video className="absolute left-3 top-1/2 -translate-y-1/2 text-[#555]" size={16} />
+                      <input
+                        type="url"
+                        value={meetLink}
+                        onChange={e => setMeetLink(e.target.value)}
+                        placeholder="https://meet.google.com/..."
+                        className="w-full bg-[#111] border border-[#222] text-white pl-10 pr-4 py-3 rounded-lg text-sm focus:outline-none focus:border-[#444]"
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div className="p-4 bg-[#111] border-t border-[#222] flex gap-3">
+                  <button onClick={() => setShowShortlistModal(false)} className="flex-1 py-3 text-[#666] font-semibold text-sm hover:bg-[#1a1a1a] rounded-lg">Cancel</button>
+                  <button onClick={() => updateStatus(shortlistTarget.Email, 'Shortlisted', interviewDate, meetLink)} disabled={postingStatus} className="flex-1 py-3 bg-white text-black font-semibold text-sm rounded-lg hover:bg-[#e0e0e0] disabled:opacity-50">
+                    {postingStatus ? 'Dispatching...' : 'Dispatch Email'}
+                  </button>
+                </div>
+              </motion.div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+    </div>
   );
 }
 
-function StatusBadge({ status }: { status: string }) {
-  const map: any = {
-    new: 'bg-amber-100 text-amber-700',
-    reviewed: 'bg-blue-100 text-blue-700',
-    shortlisted: 'bg-emerald-100 text-emerald-700',
-    rejected: 'bg-rose-100 text-rose-700'
+function StatusPill({ status }: { status?: string }) {
+  const normalized = (status || 'Pending').toLowerCase();
+
+  const map: Record<string, string> = {
+    pending: 'bg-[#ffed4a]/10 text-[#ffed4a] border-[#ffed4a]/20',
+    reviewed: 'bg-[#3b82f6]/10 text-[#3b82f6] border-[#3b82f6]/20',
+    shortlisted: 'bg-[#10b981]/10 text-[#10b981] border-[#10b981]/20',
+    rejected: 'bg-[#ef4444]/10 text-[#ef4444] border-[#ef4444]/20'
   };
-  const cls = map[status] || 'bg-slate-100 text-slate-700';
+
+  const cls = map[normalized] || 'bg-white/5 text-white border-white/10';
+
   return (
-    <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider ${cls}`}>
-       {status}
+    <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border ${cls}`}>
+      {status || 'Pending'}
     </span>
   );
 }
-

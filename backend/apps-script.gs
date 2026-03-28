@@ -1,337 +1,189 @@
 /**
- * VAIGOO INNOVATIONS - UNIFIED ADMIN BACKEND (Apps Script)
+ * VAIGOO INNOVATIONS - ADMIN DASHBOARD APPS SCRIPT
  * 
- * 1. Create a Google Sheet.
- * 2. Rename 'Sheet1' to 'Submissions'.
- * 3. Create a sheet named 'Positions'.
- * 4. Paste this code into Extensions > Apps Script.
- * 5. Deploy as Web App (Execute as: Me, Access: Anyone).
+ * INSTRUCTIONS:
+ * 1. Open your 3 Google Sheets (Contact, Career, Internship).
+ * 2. In each sheet, go to Extensions > Apps Script.
+ * 3. Delete any code there, paste this entire file in, and save.
+ * 4. Deploy > New Deployment > Selected type: Web app.
+ *    Execute as: Me. Who has access: Anyone.
+ * 5. Provide permissions when prompted.
  */
 
-const SHEET_NAME_SUBMISSIONS = 'Submissions';
-const SHEET_NAME_POSITIONS = 'Positions';
-
-/**
- * Handle incoming form submissions and status updates
- */
-function doPost(e) {
-  const body = JSON.parse(e.postData.contents);
-  const action = body.action; // 'submit' or 'updateStatus' or 'managePosition'
-
-  if (action === 'submit') {
-    return handleSubmission(body);
-  } else if (action === 'updateStatus') {
-    return handleUpdateStatus(body);
-  } else if (action === 'managePosition') {
-    return handleManagePosition(body);
-  }
-
-  return response({ error: 'Invalid action' });
-}
-
-/**
- * Handle GET requests for Admin Portal and Status Checker
- */
 function doGet(e) {
-  const type = e.parameter.type; // 'all', 'contact', 'career', 'internship', 'positions', 'statusCheck'
-  const email = e.parameter.email;
-
-  if (type === 'statusCheck' && email) {
-    return handleStatusCheck(email);
-  }
-
-  if (type === 'positions') {
-    return response({ data: getPositions() });
-  }
-
-  return response({ data: getSubmissions(type) });
-}
-
-// --- CORE HANDLERS ---
-
-function handleSubmission(data) {
-  const sheet = getSheet(SHEET_NAME_SUBMISSIONS);
-  const id = Utilities.getUuid(); // Keep for potential future use or if needed for other parts
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheets()[0]; // Assumes correct sheet is the first one
+  const data = sheet.getDataRange().getDisplayValues(); // Use getDisplayValues to safely handle Dates/Numbers
   
-  // Case: Submission (from API or direct Google Form POST)
-  // Map Google Form entry IDs to clean keys if necessary
-  const mappedData = { ...data };
-  const entryMap = {
-    'entry.1152972438': 'name',    // Contact Name
-    'entry.1658472497': 'name',    // Career Name
-    'entry.129797516':  'email',   // Contact Email
-    'entry.862200673':  'email',   // Career Email
-    'entry.1015696628': 'phone',   // Contact Phone
-    'entry.435392044':  'phone',   // Career Phone
-    'entry.1656020467': 'message', // Contact Message
-    'entry.1724599138': 'message', // Career Message
-    'entry.153460694':  'position',// Career Position
-    'entry.1608247299': 'resume'   // Career Resume
-  };
-
-  for (let key in data) {
-    if (entryMap[key]) {
-      mappedData[entryMap[key]] = data[key];
-    }
+  if (data.length <= 1) {
+    return createJsonResponse({ data: [] });
   }
 
-  // Columns: ID, Timestamp, Type, Name, Email, Phone, Message/Position/Domain, EmploymentType, Duration, InternshipType, Resume, Status, InterviewDate, MeetLink, LastStatusEmail
-  const row = [
-    id, // Use the generated ID
-    new Date(), // Timestamp
-    mappedData.type || 'unknown',
-    mappedData.name || '',
-    mappedData.email || '',
-    mappedData.phone || '',
-    mappedData.message || mappedData.position || mappedData.domain || '', // Payload
-    mappedData.employmentType || '',
-    mappedData.duration || '',
-    mappedData.internshipType || '',
-    mappedData.resume || '',
-    'Pending', // Initial Status
-    '', // InterviewDate
-    '', // MeetLink
-    ''  // Last Sent Status Email
-  ];
-  sheet.appendRow(row);
-  
-  // Auto-reply to user (Simplified Apple-style Email)
-  if (mappedData.email) { // Only send if email is available
-    MailApp.sendEmail({
-      to: mappedData.email,
-      subject: `Form Received - Vaigoo Innovations`,
-      htmlBody: `
-        <div style="font-family: -apple-system, sans-serif; padding: 40px; color: #1c1c1e; max-width: 600px; margin: auto; border: 1px solid #e5e5e7; border-radius: 20px;">
-          <p style="font-weight: 600; color: #0071e3;">Confirmation</p>
-          <h1 style="font-size: 24px; font-weight: 700;">Hello ${mappedData.name || 'there'},</h1>
-          <p>Thank you for reaching out to <b>Vaigoo Innovations</b>. We have received your ${mappedData.type || 'request'} and our team will review it shortly.</p>
-          <hr style="border: none; border-top: 1px solid #e5e5e7; margin: 20px 0;">
-          <p style="font-size: 14px; color: #86868b;">This is an automated receipt. You can track your application status on our website using your email.</p>
-        </div>
-      `
+  const headers = data[0].map(h => h.trim());
+  const items = data.slice(1).map((row, index) => {
+    let obj = {
+      _rowIndex: index + 2 // 1-indexed, plus header
+    };
+    headers.forEach((h, i) => {
+      // Clean up header names for reliable JSON properties
+      let cleanHeader = h.replace(/[^a-zA-Z0-9 ]/g, "").trim();
+      obj[cleanHeader] = row[i];
     });
-  }
-  return ContentService.createTextOutput(JSON.stringify({ success: true, id: id })).setMimeType(ContentService.MimeType.JSON);
+    return obj;
+  });
+
+  return createJsonResponse({ data: items });
 }
 
-function handleUpdateStatus(data) {
-  const { id, status } = data;
-  const sheet = getSheet(SHEET_NAME_SUBMISSIONS);
-  const rows = sheet.getDataRange().getValues();
-  
-  for (let i = 1; i < rows.length; i++) {
-    if (rows[i][0] === id) {
-      const email = rows[i][4];
-      const name = rows[i][3];
-      const type = rows[i][2];
-      const currentStatusInSheet = rows[i][11];
+function doPost(e) {
+  try {
+    const body = JSON.parse(e.postData.contents);
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const sheet = ss.getSheets()[0];
+    const data = sheet.getDataRange().getValues();
+    
+    const headers = data[0].map(h => h.trim());
+    
+    // Locate critical column indices
+    const emailIdx = headers.findIndex(h => h.toLowerCase() === 'email');
+    const statusIdx = headers.findIndex(h => h.toLowerCase() === 'status');
+    const lastSentIdx = headers.findIndex(h => h.toLowerCase() === 'last sent status');
+    const nameIdx = headers.findIndex(h => h.toLowerCase() === 'name');
+    
+    // Optional Interview columns
+    const intDateIdx = headers.findIndex(h => h.toLowerCase() === 'interview date');
+    const meetLinkIdx = headers.findIndex(h => h.toLowerCase() === 'meeting link');
 
-      // Prevent duplicate status emails
-      if (currentStatusInSheet === status) return response({ success: true, message: 'Status already set' });
-
-      sheet.getRange(i + 1, 12).setValue(status);
-      
-      // Automation Logic based on Status
-      processStatusAutomation(i + 1, name, email, type, status);
-      
-      return response({ success: true });
+    if (emailIdx === -1 || statusIdx === -1 || lastSentIdx === -1) {
+      return createJsonResponse({ error: 'Missing required columns in sheet: Email, Status, Last Sent Status' }, 400);
     }
+
+    const targetEmail = body.email.toLowerCase();
+    let rowIndex = -1;
+    let currentRowData = null;
+
+    // Search from bottom up to find the latest submission by this email
+    for (let i = data.length - 1; i >= 1; i--) {
+      if (data[i][emailIdx] && data[i][emailIdx].toString().toLowerCase() === targetEmail) {
+        rowIndex = i + 1;
+        currentRowData = data[i];
+        break;
+      }
+    }
+
+    if (rowIndex === -1) {
+      return createJsonResponse({ error: 'User email not found in sheet' }, 404);
+    }
+
+    const currentLastSent = currentRowData[lastSentIdx];
+    const newStatus = body.status;
+    const name = nameIdx !== -1 ? currentRowData[nameIdx] : 'Applicant';
+
+    // 1. Update the Status
+    sheet.getRange(rowIndex, statusIdx + 1).setValue(newStatus);
+    
+    // 2. Update Interview details if provided & if columns exist
+    if (intDateIdx !== -1 && body.interviewDate) {
+      sheet.getRange(rowIndex, intDateIdx + 1).setValue(body.interviewDate);
+    }
+    if (meetLinkIdx !== -1 && body.meetLink) {
+      sheet.getRange(rowIndex, meetLinkIdx + 1).setValue(body.meetLink);
+    }
+
+    // 3. Prevent duplicate emails
+    if (currentLastSent === newStatus) {
+      return createJsonResponse({ success: true, message: 'Status updated. Email skipped (duplicate).' });
+    }
+
+    // 4. Dispatch Email Automation
+    let emailSent = sendStatusEmail(targetEmail, name, newStatus, body.interviewDate, body.meetLink, body.type);
+
+    if (emailSent) {
+      sheet.getRange(rowIndex, lastSentIdx + 1).setValue(newStatus);
+    }
+
+    return createJsonResponse({ success: true, message: 'Status updated and email sent.' });
+
+  } catch (error) {
+    return createJsonResponse({ error: error.toString() }, 500);
   }
-  return response({ error: 'Submission not found' }, 404);
 }
 
-function handleStatusCheck(email) {
-  const rows = getSheet(SHEET_NAME_SUBMISSIONS).getDataRange().getValues();
-  const matches = rows.filter(r => r[4] === email).map(r => ({
-    status: r[11],
-    interviewDate: r[12],
-    meetLink: r[13],
-    type: r[2],
-    name: r[3]
-  }));
-  
-  return response({ data: matches });
-}
-
-// --- AUTOMATION & EMAILS ---
-
-function processStatusAutomation(rowIdx, name, email, type, status) {
-  let subject = '';
-  let body = '';
-  const sheet = getSheet(SHEET_NAME_SUBMISSIONS);
+function sendStatusEmail(toEmail, name, status, meetDate, meetLink, typeLabel) {
+  let subject = "";
+  let bodyContent = "";
+  const roleContext = typeLabel === 'internship' ? 'internship' : 'career';
 
   if (status === 'Reviewed') {
-    subject = "Your Request is Under Review – Vaigoo Innovations";
-    body = getEmailTemplate(name, "Your application is currently being reviewed by our team. We'll be in touch soon with the next steps.");
-    sendEmail(email, subject, body);
+    subject = "Your Application is Under Review | Vaigoo Innovations";
+    bodyContent = `
+      <h2 style="font-size: 22px; color: #111827; margin-top: 0;">Application Update</h2>
+      <p style="color: #4b5563; line-height: 1.6;">Hi ${name},</p>
+      <p style="color: #4b5563; line-height: 1.6;">Your ${roleContext} application is currently being reviewed by our engineering team. We are going through your portfolio and details carefully.</p>
+      <p style="color: #4b5563; line-height: 1.6;">We will keep you updated on any next steps. Thank you for your patience!</p>
+    `;
   } 
   else if (status === 'Shortlisted') {
-    const interviewDate = new Date();
-    interviewDate.setDate(interviewDate.getDate() + 5);
-    interviewDate.setHours(10, 0, 0, 0); // 10:00 AM
-    
-    // Create Calendar Event & Meet Link
-    const calendarEvent = createInterviewEvent(name, email, interviewDate);
-    const meetLink = calendarEvent ? calendarEvent.getHangoutLink() : '';
-    
-    // Update Sheet with Interview Details
-    sheet.getRange(rowIdx, 13).setValue(interviewDate.toLocaleString());
-    sheet.getRange(rowIdx, 14).setValue(meetLink);
-
-    subject = "You're Shortlisted – Vaigoo Innovations";
-    body = getShortlistTemplate(name, interviewDate, meetLink);
-    sendEmail(email, subject, body);
-  } 
+    subject = "You're Shortlisted! Interview Invitation | Vaigoo Innovations";
+    bodyContent = `
+      <h2 style="font-size: 22px; color: #111827; margin-top: 0;">Congratulations ${name}! 🎉</h2>
+      <p style="color: #4b5563; line-height: 1.6;">We were highly impressed by your ${roleContext} application and would love to invite you for a technical discussion round.</p>
+      ${meetDate ? `
+      <div style="background-color: #f3f4f6; padding: 20px; border-radius: 12px; margin: 24px 0;">
+        <p style="margin: 0; color: #6b7280; font-size: 13px; text-transform: uppercase; font-weight: bold; letter-spacing: 0.05em;">Interview Details</p>
+        <p style="margin: 8px 0; color: #111827; font-size: 18px; font-weight: bold;">🗓️ ${meetDate}</p>
+        ${meetLink ? `<a href="${meetLink}" style="display: inline-block; background-color: #2563eb; color: #ffffff; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold; margin-top: 12px;">Join Google Meet</a>` : ''}
+      </div>` : ''}
+      <p style="color: #4b5563; line-height: 1.6;">We look forward to speaking with you!</p>
+    `;
+  }
   else if (status === 'Rejected') {
-    subject = "Application Update – Vaigoo Innovations";
-    body = getRejectionTemplate(name);
-    sendEmail(email, subject, body);
+    subject = "Update on your application | Vaigoo Innovations";
+    bodyContent = `
+      <h2 style="font-size: 22px; color: #111827; margin-top: 0;">Application Update</h2>
+      <p style="color: #4b5563; line-height: 1.6;">Hi ${name},</p>
+      <p style="color: #4b5563; line-height: 1.6;">Thank you for taking the time to apply for a ${roleContext} role at Vaigoo Innovations. After careful consideration, we have decided to move forward with other candidates at this time.</p>
+      <p style="color: #4b5563; line-height: 1.6;">We strongly encourage you to keep building and re-apply in the future as our team expands.</p>
+      <div style="margin-top: 24px;">
+        <a href="https://vaigoo-innovations.vercel.app" style="color: #2563eb; font-weight: bold; text-decoration: none;">Explore our website</a>
+      </div>
+    `;
+  } else {
+    // If pending or some other status, don't send emails automatically.
+    return false;
   }
-}
 
-function createInterviewEvent(name, email, date) {
-  try {
-    const endTime = new Date(date.getTime() + 30 * 60000); // 30 mins
-    const event = CalendarApp.getDefaultCalendar().createEvent(
-      `Interview: ${name} x Vaigoo Innovations`,
-      date,
-      endTime,
-      {
-        guests: email,
-        sendInvites: true,
-        description: "Technical Interview with Vaigoo Innovations team."
-      }
-    );
-    return event;
-  } catch (err) {
-    console.error("Calendar creation failed: " + err);
-    return null;
-  }
-}
-
-// --- HELPERS ---
-
-function getSheet(name) {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  let sheet = ss.getSheetByName(name);
-  if (!sheet) {
-    sheet = ss.insertSheet(name);
-    // Add headers if new
-    if (name === SHEET_NAME_SUBMISSIONS) {
-       sheet.appendRow(['ID', 'Timestamp', 'Type', 'Name', 'Email', 'Phone', 'Payload', 'Employment', 'Duration', 'InternshipType', 'Resume', 'Status', 'InterviewDate', 'MeetLink', 'LastSent']);
-    } else if (name === SHEET_NAME_POSITIONS) {
-       sheet.appendRow(['ID', 'Title', 'Type']);
-    }
-  }
-  return sheet;
-}
-
-function getSubmissions(type) {
-  const rows = getSheet(SHEET_NAME_SUBMISSIONS).getDataRange().getValues();
-  const data = rows.slice(1).map(r => ({
-    id: r[0],
-    createdAt: r[1],
-    type: r[2],
-    name: r[3],
-    email: r[4],
-    phone: r[5],
-    payload: r[6],
-    employmentType: r[7],
-    duration: r[8],
-    internshipType: r[9],
-    resume: r[10],
-    status: r[11],
-    interviewDate: r[12],
-    meetLink: r[13]
-  }));
-  
-  if (type && type !== 'all') {
-    return data.filter(d => d.type === type);
-  }
-  return data;
-}
-
-function response(obj) {
-  return ContentService.createTextOutput(JSON.stringify(obj))
-    .setMimeType(ContentService.MimeType.JSON);
-}
-
-function sendEmail(to, subject, htmlBody) {
-  try {
-    MailApp.sendEmail({
-      to: to,
-      subject: subject,
-      htmlBody: htmlBody
-    });
-  } catch (err) {
-    console.error("Email sending failed: " + err);
-  }
-}
-
-// --- PREMIUM EMAIL TEMPLATES ---
-
-function getEmailBase(content) {
-  return `
-    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f7f9fc; padding: 40px; color: #1a202c;">
-      <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 24px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.05); border: 1px solid #e2e8f0;">
-        <div style="padding: 40px;">
-          <div style="margin-bottom: 30px; font-weight: 800; font-size: 24px; color: #007bff;">Vaigoo <span style="color: #00d4ff;">Innovations</span></div>
-          ${content}
-          <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #edf2f7; font-size: 14px; color: #a0aec0;">
-            &copy; ${new Date().getFullYear()} Vaigoo Innovations. All rights reserved.
-          </div>
+  // Wrapper template
+  const htmlBody = `
+    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f9fafb; padding: 40px 16px;">
+      <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+        <div style="padding: 32px; border-bottom: 2px solid #f3f4f6;">
+          <h1 style="margin: 0; font-size: 24px; font-weight: 900; color: #111827;">Vaigoo <span style="color: #2563eb;">Innovations</span></h1>
+        </div>
+        <div style="padding: 32px;">
+          ${bodyContent}
+        </div>
+        <div style="background-color: #f9fafb; padding: 24px 32px; text-align: center; color: #9ca3af; font-size: 13px;">
+          &copy; ${new Date().getFullYear()} Vaigoo Innovations. All rights reserved.
         </div>
       </div>
     </div>
   `;
-}
 
-function getEmailTemplate(name, msg) {
-  return getEmailBase(`
-    <h2 style="font-size: 24px; font-weight: 700; margin-bottom: 20px;">Hi ${name},</h2>
-    <p style="font-size: 16px; line-height: 1.6; color: #4a5568;">${msg}</p>
-  `);
-}
-
-function getShortlistTemplate(name, date, link) {
-  return getEmailBase(`
-    <h2 style="font-size: 24px; font-weight: 700; margin-bottom: 20px;">You're Shortlisted! 🎉</h2>
-    <p style="font-size: 16px; line-height: 1.6; color: #4a5568; margin-bottom: 30px;">
-      Congratulations ${name}! We were impressed by your application and would like to invite you for a technical interview.
-    </p>
-    <div style="background-color: #f8fafc; border-radius: 16px; padding: 25px; margin-bottom: 30px; border: 1px solid #e2e8f0;">
-      <div style="margin-bottom: 10px; font-size: 14px; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">Interview Details</div>
-      <div style="font-size: 18px; font-weight: 700; color: #0f172a; margin-bottom: 4px;">📅 ${date.toLocaleDateString()} at ${date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
-      <div style="font-size: 14px; color: #64748b;">Duration: 30 Minutes</div>
-    </div>
-    <a href="${link}" style="display: block; width: 100%; text-align: center; background-color: #007bff; color: #ffffff; padding: 16px 0; border-radius: 12px; font-weight: 700; text-decoration: none; font-size: 16px; box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);">Join Google Meet</a>
-  `);
-}
-
-function getRejectionTemplate(name) {
-  return getEmailBase(`
-    <h2 style="font-size: 24px; font-weight: 700; margin-bottom: 20px;">Application Update</h2>
-    <p style="font-size: 16px; line-height: 1.6; color: #4a5568; margin-bottom: 30px;">
-      Hi ${name}, thank you for your interest in Vaigoo Innovations. While your profile was strong, we have decided to move forward with other candidates at this time.
-    </p>
-    <p style="font-size: 16px; line-height: 1.6; color: #4a5568; margin-bottom: 30px;">
-      We encourage you to keep building and re-apply in the future as our needs evolve!
-    </p>
-    <a href="https://vaigoo-innovations.vercel.app/careers" style="display: inline-block; background-color: #0f172a; color: #ffffff; padding: 14px 28px; border-radius: 12px; font-weight: 700; text-decoration: none; font-size: 15px;">Apply Again</a>
-  `);
-}
-
-// --- POSITION MANAGEMENT ---
-
-function getPositions() {
-  const rows = getSheet(SHEET_NAME_POSITIONS).getDataRange().getValues();
-  return rows.slice(1).map(r => ({ id: r[0], title: r[1], type: r[2] }));
-}
-
-function handleManagePosition(data) {
-  const sheet = getSheet(SHEET_NAME_POSITIONS);
-  if (data.op === 'add') {
-    sheet.appendRow([Utilities.getUuid(), data.title, data.type]);
-    return response({ success: true });
+  try {
+    MailApp.sendEmail({
+      to: toEmail,
+      subject: subject,
+      htmlBody: htmlBody
+    });
+    return true;
+  } catch (err) {
+    console.error(err);
+    return false;
   }
+}
+
+function createJsonResponse(obj, statusCode = 200) {
+  return ContentService.createTextOutput(JSON.stringify(obj))
+    .setMimeType(ContentService.MimeType.JSON);
 }

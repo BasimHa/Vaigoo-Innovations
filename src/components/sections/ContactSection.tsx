@@ -19,24 +19,11 @@ export const ContactSection = () => {
     // Store hard reference to prevent React synthetic event pooling wipeout
     const formElement = event.currentTarget;
     
-    // Convert to explicit URLSearchParams for Google Forms compatibility
+    // Build data for API Submission
     const nativeData = new FormData(formElement);
-    const searchParams = new URLSearchParams();
-    
-    // Google Form mapping logic
-    const nameVal = nativeData.get("name");
-    if (nameVal) searchParams.append("entry.1181522634", nameVal as string);
-    
-    const emailVal = nativeData.get("email");
-    if (emailVal) searchParams.append("entry.179018669", emailVal as string);
-    
-    const messageVal = nativeData.get("message");
-    if (messageVal) searchParams.append("entry.523101576", messageVal as string);
-    
-    // Wire the natively validated Phone Number string directly
-    if (phoneNumber) {
-      searchParams.append("entry.1731605438", `${selectedCountry.code} ${phoneNumber}`);
-    }
+    const nameVal = nativeData.get("name") as string;
+    const emailVal = nativeData.get("email") as string;
+    const messageVal = nativeData.get("message") as string;
     
     try {
       // Send to Unified Submission API (Handles Google Sheets & Email Automation)
