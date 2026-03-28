@@ -26,6 +26,33 @@ export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const type = searchParams.get('type') || '';
 
+  if (type === 'analytics') {
+    try {
+      // Fetch all three sources concurrently to aggregate for analytics
+      const [contactRes, careerRes, internshipRes] = await Promise.all([
+        fetch(URL_MAP.contact),
+        fetch(URL_MAP.career),
+        fetch(URL_MAP.internship)
+      ]);
+
+      const [contactJson, careerJson, internshipJson] = await Promise.all([
+        contactRes.json().catch(() => ({ data: [] })),
+        careerRes.json().catch(() => ({ data: [] })),
+        internshipRes.json().catch(() => ({ data: [] }))
+      ]);
+
+      const mergedData = [
+        ...(contactJson.data || []),
+        ...(careerJson.data || []),
+        ...(internshipJson.data || [])
+      ];
+
+      return NextResponse.json({ data: mergedData }, { status: 200 });
+    } catch (e: any) {
+      return NextResponse.json({ data: [], error: 'Aggregation failed: ' + e.message }, { status: 200 });
+    }
+  }
+
   if (!URL_MAP[type]) {
     return NextResponse.json({ error: 'Invalid type provided' }, { status: 400 });
   }

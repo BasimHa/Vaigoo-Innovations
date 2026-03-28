@@ -57,7 +57,8 @@ export async function GET(req: Request) {
 
   const result = await supabaseREST.select('job_listings', query);
   if (result.error) {
-    return NextResponse.json({ error: result.error }, { status: 500 });
+    console.error("JOBS_GET_API_FAILURE:", result.error);
+    return NextResponse.json({ error: result.error, hint: 'Check if job_listings table exists' }, { status: 500 });
   }
 
   const data = (result.data || []).map(fromDb);
@@ -84,7 +85,8 @@ export async function POST(req: Request) {
 
     const result = await supabaseREST.insert('job_listings', row);
     if (result.error) {
-      return NextResponse.json({ error: result.error }, { status: 500 });
+      console.error("JOBS_POST_API_FAILURE:", result.error);
+      return NextResponse.json({ error: result.error, hint: 'Check RLS policies or table columns' }, { status: 500 });
     }
 
     return NextResponse.json({ success: true, data: fromDb(result.data?.[0] || row) });

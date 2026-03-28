@@ -32,10 +32,14 @@ export const supabaseREST = {
         },
         body: JSON.stringify(data)
       });
-      if (!response.ok) throw new Error(`Insert failed: ${response.statusText}`);
+      if (!response.ok) {
+        const errText = await response.text();
+        console.error(`SUPABASE_POST_ERROR [${table}]:`, response.status, errText);
+        throw new Error(`Insert failed: ${response.status} ${errText}`);
+      }
       return { data: await response.json(), error: null };
     } catch (e: any) {
-      console.error(e);
+      console.error("SUPABASE_POST_EXCEPTION:", e.message);
       return { data: null, error: e.message };
     }
   },
@@ -54,10 +58,14 @@ export const supabaseREST = {
         },
         cache: 'no-store'
       });
-      if (!response.ok) throw new Error(`Select failed: ${response.statusText}`);
+      if (!response.ok) {
+        const errText = await response.text();
+        console.error(`SUPABASE_GET_ERROR [${table}]:`, response.status, errText);
+        throw new Error(`Select failed: ${response.status} ${errText}`);
+      }
       return { data: await response.json(), error: null };
     } catch (e: any) {
-      console.error(e);
+      console.error("SUPABASE_GET_EXCEPTION:", e.message);
       return { data: [], error: e.message };
     }
   },
@@ -77,10 +85,14 @@ export const supabaseREST = {
         },
         body: JSON.stringify(data)
       });
-      if (!response.ok) throw new Error(`Update failed: ${response.statusText}`);
+      if (!response.ok) {
+        const errText = await response.text();
+        console.error(`SUPABASE_PATCH_ERROR [${table}]:`, response.status, errText);
+        throw new Error(`Update failed: ${response.status} ${errText}`);
+      }
       return { data: await response.json(), error: null };
     } catch (e: any) {
-      console.error(e);
+      console.error("SUPABASE_PATCH_EXCEPTION:", e.message);
       return { data: null, error: e.message };
     }
   }
