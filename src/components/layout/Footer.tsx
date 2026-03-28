@@ -36,6 +36,12 @@ export const Footer = () => {
               <button onClick={() => window.open("https://wa.me/9037049531", "_blank")} className="w-10 h-10 rounded-full bg-white/50 border border-slate-200 shadow-sm flex items-center justify-center text-slate-600 hover:text-primary-blue transition-all duration-300 hover:scale-110 cursor-pointer">
                 <MessageCircle size={20} />
               </button>
+              <button onClick={() => window.open("https://www.linkedin.com/in/vaigoo-innovations-7646123ba/", "_blank")} className="w-10 h-10 rounded-full bg-white/50 border border-slate-200 shadow-sm flex items-center justify-center text-slate-600 hover:text-primary-blue transition-all duration-300 hover:scale-110 cursor-pointer">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" /><rect width="4" height="12" x="2" y="9" /><circle cx="4" cy="4" r="2" /></svg>
+              </button>
+              <button onClick={() => window.open("https://www.instagram.com/vaigoo.innovations.pvt.ltd/", "_blank")} className="w-10 h-10 rounded-full bg-white/50 border border-slate-200 shadow-sm flex items-center justify-center text-slate-600 hover:text-primary-blue transition-all duration-300 hover:scale-110 cursor-pointer">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="20" x="2" y="2" rx="5" ry="5" /><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" /><line x1="17.5" x2="17.51" y1="6.5" y2="6.5" /></svg>
+              </button>
             </div>
           </div>
           
