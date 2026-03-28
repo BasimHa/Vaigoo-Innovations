@@ -3,7 +3,7 @@ import { Inter } from "next/font/google";
 import Script from "next/script";
 import { AnalyticsTracker } from '@/components/analytics/AnalyticsTracker';
 import { ConditionalShell } from '@/components/layout/ConditionalShell';
-import AIChatbot from '@/components/ui/AI-Chatbot';
+
 import { GA_TRACKING_ID } from '@/lib/gtag';
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/next";
@@ -59,7 +59,6 @@ export default function RootLayout({
         <ConditionalShell>
           {children}
         </ConditionalShell>
-        <AIChatbot />
         <SpeedInsights />
         <Analytics />
       </body>
