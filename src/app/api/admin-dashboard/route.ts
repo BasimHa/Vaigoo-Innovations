@@ -31,18 +31,23 @@ export async function GET(req: Request) {
   }
 
   try {
-    const googleRes = await fetch(URL_MAP[type], {
-      method: "GET",
-      // Next.js handles redirects automatically, bringing us to google content server
-    });
+    const googleRes = await fetch(URL_MAP[type], { method: "GET" });
     
-    if (!googleRes.ok) throw new Error("Google Apps Script Error");
+    // Check content-type before parsing — GAS sometimes returns HTML error pages
+    const contentType = googleRes.headers.get('content-type') || '';
+    if (!contentType.includes('application/json')) {
+      const text = await googleRes.text();
+      console.error("DASHBOARD_API: Got non-JSON response:", text.substring(0, 200));
+      // Return empty data so login succeeds even if GAS is not yet deployed
+      return NextResponse.json({ data: [], warning: 'Google Apps Script not yet deployed or accessible.' }, { status: 200 });
+    }
+    
     const data = await googleRes.json();
-    
     return NextResponse.json(data, { status: 200 });
   } catch (error: any) {
     console.error("DASHBOARD_API_ERROR:", error);
-    return NextResponse.json({ error: error.message || 'Failed fetching from Google Sheets' }, { status: 500 });
+    // Return empty data instead of 500 so the admin portal still loads
+    return NextResponse.json({ data: [], error: error.message }, { status: 200 });
   }
 }
 
@@ -70,12 +75,11 @@ export async function POST(req: Request) {
     const googleRes = await fetch(URL_MAP[type], {
       method: 'POST',
       body: JSON.stringify(payload)
-      // Apps Script doPost reads e.postData.contents
     });
 
-    if (!googleRes.ok) {
-        // Apps Script throws strange redirects occasionally if failed
-        throw new Error("Failed to post to Google Sheets");
+    const contentType = googleRes.headers.get('content-type') || '';
+    if (!contentType.includes('application/json')) {
+      return NextResponse.json({ success: false, warning: 'GAS returned non-JSON. Please re-deploy the Apps Script.' }, { status: 200 });
     }
 
     const data = await googleRes.json();
