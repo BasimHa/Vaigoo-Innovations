@@ -131,6 +131,8 @@ const CAREER_FORM_URL =
   'https://docs.google.com/forms/u/0/d/e/1FAIpQLSdC2Z5tERW2sYtjzJN4VP-xCss-aWr1WxaLLqv2gvXCiLwH_Q/formResponse';
 
 export default function CareersPage() {
+  const [selectedJobTitle, setSelectedJobTitle] = useState('');
+  const [isHighlighting, setIsHighlighting] = useState(false);
   const [openJobs, setOpenJobs] = useState<JobListing[]>([]);
   const [focusedArea, setFocusedArea] = useState('');
   const [internshipType, setInternshipType] = useState('');
@@ -146,15 +148,30 @@ export default function CareersPage() {
   }, []);
 
   const handleApply = (job: JobListing) => {
+    // 1. Capture exact job data
+    setSelectedJobTitle(job.title);
+
+    // 2. Pre-fill categorical fields
     const match = focusedAreaOptions.find((o) => o.value === job.department);
     if (match) setFocusedArea(match.value);
+    
     if (isInternship(job.employmentType as any)) {
-      // Pre-fill internship type based on employment type string
       const intMatch = internshipTypeOptions.find((o) => job.employmentType.includes(o.value.replace('Internship ', '')));
       if (intMatch) setInternshipType(intMatch.value);
+    } else {
+      setInternshipType(''); // Clear if it's a regular job
     }
+
+    // 3. Smooth scroll with offset
     setTimeout(() => {
-      document.getElementById('apply-form')?.scrollIntoView({ behavior: 'smooth' });
+      const el = document.getElementById('apply-form-section');
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        
+        // 4. Trigger premium highlight glow
+        setIsHighlighting(true);
+        setTimeout(() => setIsHighlighting(false), 2000);
+      }
     }, 100);
   };
 
@@ -190,7 +207,9 @@ export default function CareersPage() {
     if (focusedArea) body.append('entry.435392044', focusedArea);
     if (internshipType) body.append('entry.153460694', internshipType);
 
-    body.append('entry.1608247299', resume);
+    // Append job title to the resume/portfolio field for admin context
+    const finalResume = selectedJobTitle ? `[JOB: ${selectedJobTitle}] ${resume}` : resume;
+    body.append('entry.1608247299', finalResume);
 
     try {
       await fetch(CAREER_FORM_URL, {
@@ -230,11 +249,35 @@ export default function CareersPage() {
         variants={staggerContainer}
         initial="hidden"
         animate="visible"
-        className="bg-white/60 backdrop-blur-md rounded-3xl p-8 md:p-12 shadow-xl border border-slate-200/50"
+        whileInView={isHighlighting ? { boxShadow: "0 0 40px rgba(59, 130, 246, 0.4)", scale: 1.01 } : { scale: 1 }}
+        transition={{ duration: 0.5 }}
+        className={`bg-white/60 backdrop-blur-md rounded-3xl p-8 md:p-12 shadow-xl border transition-all duration-700 ${
+          isHighlighting ? 'border-primary-blue shadow-blue-500/10' : 'border-slate-200/50'
+        }`}
       >
-        <h2 className="text-2xl font-bold text-slate-900 mb-8">
+        <h2 className="text-2xl font-bold text-slate-900 mb-2">
           Apply <span className="text-gradient-primary">Now</span>
         </h2>
+        
+        {/* Smart UX Indicator */}
+        <AnimatePresence>
+          {selectedJobTitle && (
+            <motion.div
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="flex items-center gap-2 mb-8 text-blue-600 font-medium text-sm bg-blue-50/50 w-fit px-3 py-1.5 rounded-lg border border-blue-100"
+            >
+              <span className="animate-pulse">👉</span> You are applying for: <strong className="text-blue-700 tracking-tight">{selectedJobTitle}</strong>
+              <button 
+                onClick={() => setSelectedJobTitle('')} 
+                className="ml-2 hover:text-blue-900 transition-colors"
+                title="Clear selection"
+              >
+                <X size={14} />
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         <form className="space-y-6" onSubmit={handleSubmit}>
           {/* Row 1 — Name + Email */}
