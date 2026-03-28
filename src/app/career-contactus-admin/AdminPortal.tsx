@@ -1,11 +1,12 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { Search, RefreshCw, Mail, Briefcase, GraduationCap, Clock, CheckCircle2, XCircle, Lock, LayoutDashboard, Calendar, Video, ChevronRight, X, LogOut, TrendingUp, Sparkles, PieChart } from 'lucide-react';
+import { Search, RefreshCw, Mail, Plus, Briefcase, GraduationCap, Clock, CheckCircle2, XCircle, Lock, LayoutDashboard, Calendar, Video, ChevronRight, X, LogOut, TrendingUp, Sparkles, PieChart } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import AnalyticsTab from './AnalyticsTab';
+import JobsManager from './JobsManager';
 
-type TabType = 'contact' | 'career' | 'internship' | 'analytics';
+type TabType = 'contact' | 'career' | 'internship' | 'analytics' | 'jobs';
 
 export default function AdminPortal() {
   const [email, setEmail] = useState('');
@@ -76,7 +77,7 @@ export default function AdminPortal() {
   };
 
   useEffect(() => {
-    if (isAuthenticated && token) {
+    if (isAuthenticated && token && activeTab !== 'jobs') {
       fetchSubmissions(token, activeTab);
       setSelectedSub(null);
     }
@@ -173,6 +174,7 @@ export default function AdminPortal() {
             { id: 'career', label: 'Careers', icon: <Briefcase size={16} /> },
             { id: 'internship', label: 'Internships', icon: <GraduationCap size={16} /> },
             { id: 'contact', label: 'Contacts', icon: <Mail size={16} /> },
+            { id: 'jobs', label: 'Job Postings', icon: <Plus size={16} /> },
             { id: 'analytics', label: 'Intelligence', icon: <TrendingUp size={16} /> },
           ].map(tab => (
             <button
@@ -223,7 +225,9 @@ export default function AdminPortal() {
 
         {/* Data Table Area */}
         <div className="flex-1 overflow-auto p-8 relative">
-          {activeTab === 'analytics' ? (
+          {activeTab === 'jobs' ? (
+            <JobsManager password={token} />
+          ) : activeTab === 'analytics' ? (
             <AnalyticsTab data={submissions} activeTab={activeTab} />
           ) : loading && submissions.length === 0 ? (
             <div className="absolute inset-0 flex items-center justify-center text-[#555555] gap-3">
