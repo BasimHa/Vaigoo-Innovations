@@ -6,6 +6,9 @@ import { MapPin, Phone, Mail, Clock, CheckCircle2, X } from 'lucide-react';
 import { fadeUp, staggerContainer, scaleIn } from '../animations/variants';
 import { CountryCodePicker, COUNTRY_CODES } from '../ui/CountryCodePicker';
 
+const CONTACT_FORM_URL =
+  'https://docs.google.com/forms/u/0/d/e/1FAIpQLSc37vKm2W-WC47FvzG64RV14UBiM7MGvXXT7OSCdCSCTikgqA/formResponse';
+
 export const ContactSection = () => {
   const [result, setResult] = useState("Send Message");
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -15,42 +18,47 @@ export const ContactSection = () => {
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setResult("Sending...");
-    
-    // Store hard reference to prevent React synthetic event pooling wipeout
+
     const formElement = event.currentTarget;
-    
-    // Build data for API Submission
-    const nativeData = new FormData(formElement);
-    const nameVal = nativeData.get("name") as string;
-    const emailVal = nativeData.get("email") as string;
-    const messageVal = nativeData.get("message") as string;
-    
+    const fd = new FormData(formElement);
+    const name = (fd.get("name") as string || '').trim();
+    const email = (fd.get("email") as string || '').trim();
+    const message = (fd.get("message") as string || '').trim();
+    const phone = phoneNumber ? `${selectedCountry.code} ${phoneNumber}` : '';
+
+    // Basic validation
+    if (!name || !email || !message) {
+      setResult("Please fill all required fields.");
+      setTimeout(() => setResult("Send Message"), 3000);
+      return;
+    }
+
     try {
-      // Send to Unified Submission API (Handles Google Sheets & Email Automation)
-      const response = await fetch('/api/submissions', {
+      // Submit directly to Google Form (no-cors — always succeeds silently)
+      const body = new URLSearchParams();
+      body.append('entry.1152972438', name);
+      body.append('entry.129797516', email);
+      if (phone) body.append('entry.1015696628', phone);
+      body.append('entry.1656020467', message);
+
+      await fetch(CONTACT_FORM_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          type: 'contact',
-          name: nameVal,
-          email: emailVal,
-          phone: phoneNumber ? `${selectedCountry.code} ${phoneNumber}` : null,
-          message: messageVal
-        })
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: body.toString(),
       });
 
-      if (!response.ok) throw new Error("Submission failed");
-      
       setResult("Send Message");
       setShowSuccessModal(true);
       formElement.reset();
       setPhoneNumber('');
     } catch (err: any) {
-      console.error("Fetch Error:", err);
+      console.error("Contact form error:", err);
       setResult("Failed. Try again.");
       setTimeout(() => setResult("Send Message"), 4000);
     }
   };
+
 
 
   return (

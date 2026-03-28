@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { Search, RefreshCw, Mail, Briefcase, GraduationCap, Clock, CheckCircle2, XCircle, Lock, LayoutDashboard, Calendar, Video, ChevronRight, X, LogOut, TrendingUp, Sparkles, PieChart } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { supabase } from '@/lib/supabase';
 import AnalyticsTab from './AnalyticsTab';
 
 type TabType = 'contact' | 'career' | 'internship' | 'analytics';
@@ -52,44 +51,28 @@ export default function AdminPortal() {
     }
   };
 
+  const PASSKEY = 'Basim123!';
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setAuthError('');
 
-    if (!supabase) {
-      setAuthError('Authentication Error: Supabase configuration is missing. Please add your environment variables.');
+    if (password !== PASSKEY) {
+      setAuthError('Invalid passkey. Access denied.');
       setLoading(false);
       return;
     }
 
-    try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: 'basimhassan325@gmail.com', // Fixed admin email
-        password
-      });
-
-      if (error) {
-        setAuthError(error.message);
-        setLoading(false);
-        return;
-      }
-
-      if (data.session) {
-        fetchSubmissions(data.session.access_token, activeTab);
-      }
-    } catch (err) {
-      setAuthError('An unexpected error occurred during login');
-      setLoading(false);
-    }
+    // Passkey valid — set token and fetch data
+    setToken(PASSKEY);
+    fetchSubmissions(PASSKEY, activeTab);
   };
 
-  const handleLogout = async () => {
-    if (supabase) await supabase.auth.signOut();
+  const handleLogout = () => {
     setIsAuthenticated(false);
     setToken('');
     setPassword('');
-    setEmail('');
   };
 
   useEffect(() => {

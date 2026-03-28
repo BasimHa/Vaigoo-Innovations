@@ -1,117 +1,143 @@
 import { NextResponse } from 'next/server';
-import { supabaseREST } from '@/lib/supabase';
+import { readFileSync, writeFileSync } from 'fs';
+import { join } from 'path';
+import { randomUUID } from 'crypto';
+import type { JobListing } from '@/lib/jobs';
 
-// Handle GET to list jobs (public read allowed, no password required for GET)
+// ─── JSON File Store ─────────────────────────────────────────────────────────
+// Data lives in /data/jobs.json. Swap readJobs/writeJobs with DB calls to migrate.
+
+const DATA_PATH = join(process.cwd(), 'data', 'jobs.json');
+
+function readJobs(): JobListing[] {
+  try {
+    const raw = readFileSync(DATA_PATH, 'utf-8');
+    return JSON.parse(raw).jobs || [];
+  } catch {
+    return [];
+  }
+}
+
+function writeJobs(jobs: JobListing[]): void {
+  writeFileSync(DATA_PATH, JSON.stringify({ jobs }, null, 2), 'utf-8');
+}
+
+// ─── Auth ─────────────────────────────────────────────────────────────────────
+const PASSKEY = process.env.ADMIN_PASSWORD || 'Basim123!';
+
+function isAuthorized(req: Request): boolean {
+  const auth = req.headers.get('authorization') || '';
+  const token = auth.replace('Bearer ', '').trim();
+  return token === PASSKEY;
+}
+
+// ─── GET — public, no auth required ──────────────────────────────────────────
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
-  const status = searchParams.get('status');
-  
-  let query = 'select=*&order=createdat.desc';
+  const status = searchParams.get('status'); // 'open' | 'closed' | null (all)
+
+  let jobs = readJobs();
+
   if (status && status !== 'all') {
-    query += `&status=eq.${status}`;
+    jobs = jobs.filter((j) => j.status === status);
   }
 
-  const result = await supabaseREST.select('job_listings', query);
+  // Featured jobs first, then sorted by createdAt desc
+  jobs.sort((a, b) => {
+    if (a.featured && !b.featured) return -1;
+    if (!a.featured && b.featured) return 1;
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+  });
 
-  if (result.error) {
-    return NextResponse.json({ error: result.error }, { status: 500 });
-  }
-
-  // Map lowercase pg columns back to camelCase for frontend
-  const mappedData = (result.data || []).map((r: any) => ({
-    ...r,
-    employmentType: r.employmenttype || r.employmentType,
-    salaryStipend: r.salarystipend || r.salaryStipend,
-    createdAt: r.createdat || r.createdAt
-  }));
-
-  return NextResponse.json({ data: mappedData });
+  return NextResponse.json({ data: jobs });
 }
 
-// Ensure subsequent methods are protected
-const authenticateAdmin = (req: Request) => {
-  const authHeader = req.headers.get('authorization');
-  const envPassword = process.env.ADMIN_PASSWORD || 'admin123';
-  const envPasswordExceptCase = process.env.ADMIN_PASSWORD_EXCEPT_CASE || '';
-  const providedToken = authHeader?.replace('Bearer ', '') || '';
-
-  const primaryMatch = authHeader === `Bearer ${envPassword}`;
-  const secondaryMatch = envPasswordExceptCase &&
-    providedToken.toLowerCase() === envPasswordExceptCase.toLowerCase();
-
-  return primaryMatch || secondaryMatch;
-};
-
-// Handle POST to create a new job
+// ─── POST — create a new job ──────────────────────────────────────────────────
 export async function POST(req: Request) {
-  if (!authenticateAdmin(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!isAuthorized(req)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
 
   try {
-    const data = await req.json();
-    if (!data.title || !data.department) return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
+    const body = await req.json();
+    if (!body.title || !body.department) {
+      return NextResponse.json({ error: 'Missing required fields: title, department' }, { status: 400 });
+    }
 
-    const result = await supabaseREST.insert('job_listings', {
-      title: data.title,
-      department: data.department,
-      employmenttype: data.employmentType || data.employmenttype,
-      description: data.description,
-      requirements: data.requirements,
-      location: data.location,
-      duration: data.duration,
-      salarystipend: data.salaryStipend || data.salarystipend,
-      status: data.status || 'open'
-    });
+    const newJob: JobListing = {
+      id: randomUUID(),
+      title: body.title,
+      department: body.department,
+      employmentType: body.employmentType || 'Full-time',
+      description: body.description || '',
+      requirements: body.requirements || '',
+      location: body.location || 'Remote',
+      duration: body.duration || undefined,
+      salaryStipend: body.salaryStipend || undefined,
+      status: body.status || 'open',
+      featured: body.featured ?? false,
+      createdAt: new Date().toISOString(),
+    };
 
-    if (result.error) return NextResponse.json({ error: result.error }, { status: 500 });
-    return NextResponse.json({ success: true, data: result.data });
+    const jobs = readJobs();
+    jobs.push(newJob);
+    writeJobs(jobs);
+
+    return NextResponse.json({ success: true, data: newJob });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
 
-// Handle PATCH to update an existing job
+// ─── PATCH — update job fields ────────────────────────────────────────────────
 export async function PATCH(req: Request) {
-  if (!authenticateAdmin(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!isAuthorized(req)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
 
   try {
-    const data = await req.json();
-    if (!data.id) return NextResponse.json({ error: 'Missing ID' }, { status: 400 });
-    
-    // Convert fields cleanly
-    const payload: any = { ...data };
-    delete payload.id;
-    if (payload.employmentType) { payload.employmenttype = payload.employmentType; delete payload.employmentType; }
-    if (payload.salaryStipend) { payload.salarystipend = payload.salaryStipend; delete payload.salaryStipend; }
+    const body = await req.json();
+    if (!body.id) {
+      return NextResponse.json({ error: 'Missing job ID' }, { status: 400 });
+    }
 
-    const result = await supabaseREST.update('job_listings', data.id, payload);
-    if (result.error) return NextResponse.json({ error: result.error }, { status: 500 });
+    const jobs = readJobs();
+    const idx = jobs.findIndex((j) => j.id === body.id);
+    if (idx === -1) {
+      return NextResponse.json({ error: 'Job not found' }, { status: 404 });
+    }
 
-    return NextResponse.json({ success: true });
+    // Merge fields — only update what's provided
+    const { id, ...updates } = body;
+    jobs[idx] = { ...jobs[idx], ...updates };
+    writeJobs(jobs);
+
+    return NextResponse.json({ success: true, data: jobs[idx] });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
 
-// Handle DELETE to remove a job
+// ─── DELETE — remove a job ────────────────────────────────────────────────────
 export async function DELETE(req: Request) {
-  if (!authenticateAdmin(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!isAuthorized(req)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
 
   try {
     const { searchParams } = new URL(req.url);
     const id = searchParams.get('id');
-    if (!id) return NextResponse.json({ error: 'Missing ID' }, { status: 400 });
+    if (!id) {
+      return NextResponse.json({ error: 'Missing job ID' }, { status: 400 });
+    }
 
-    // Assuming we extend supabaseREST to support delete
-    const { url, key } = require('@/lib/supabase').getSupabaseConfig();
-    const response = await fetch(`${url}/rest/v1/job_listings?id=eq.${id}`, {
-      method: 'DELETE',
-      headers: {
-        'apikey': key,
-        'Authorization': `Bearer ${key}`
-      }
-    });
-    
-    if (!response.ok) throw new Error("Delete failed");
+    const jobs = readJobs();
+    const filtered = jobs.filter((j) => j.id !== id);
+    if (filtered.length === jobs.length) {
+      return NextResponse.json({ error: 'Job not found' }, { status: 404 });
+    }
+
+    writeJobs(filtered);
     return NextResponse.json({ success: true });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });

@@ -7,7 +7,7 @@ import { JobListing, Department, EmploymentType, WorkLocation, DEPARTMENTS, EMPL
 
 // ─── Blank form state ─────────────────────────────────────────────────────────
 const blankForm = (): Omit<JobListing, 'id' | 'createdAt'> => ({
-  title: '', department: 'General', employmentType: 'Full-time', description: '', requirements: '', location: 'Remote', duration: '', salaryStipend: '', status: 'open'
+  title: '', department: 'General', employmentType: 'Full-time', description: '', requirements: '', location: 'Remote', duration: '', salaryStipend: '', status: 'open', featured: false
 });
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
@@ -43,7 +43,7 @@ function TextareaField({ label, value, onChange, placeholder = '', rows = 4, req
 // ─── Job Form Modal ───────────────────────────────────────────────────────────
 function JobFormModal({ initial, onSave, onClose }: { initial?: JobListing; onSave: (data: any) => void; onClose: () => void }) {
   const [form, setForm] = useState<Omit<JobListing, 'id' | 'createdAt'>>(
-    initial ? { title: initial.title, department: initial.department, employmentType: initial.employmentType, description: initial.description, requirements: initial.requirements, location: initial.location, duration: initial.duration ?? '', salaryStipend: initial.salaryStipend ?? '', status: initial.status } : blankForm()
+    initial ? { title: initial.title, department: initial.department, employmentType: initial.employmentType, description: initial.description, requirements: initial.requirements, location: initial.location, duration: initial.duration ?? '', salaryStipend: initial.salaryStipend ?? '', status: initial.status, featured: initial.featured ?? false } : blankForm()
   );
 
   const setField = <K extends keyof typeof form>(k: K, v: (typeof form)[K]) => setForm((f) => ({ ...f, [k]: v }));
@@ -76,6 +76,15 @@ function JobFormModal({ initial, onSave, onClose }: { initial?: JobListing; onSa
             <TextField label="Duration (optional)" value={form.duration ?? ''} onChange={(v) => setField('duration', v)} placeholder={isInternship(form.employmentType) ? 'e.g. 6 months' : 'N/A'} />
           </div>
           <TextField label="Salary / Stipend (optional)" value={form.salaryStipend ?? ''} onChange={(v) => setField('salaryStipend', v)} placeholder="e.g. ₹15,000/month or Competitive" />
+          <div className="flex items-center justify-between bg-amber-50 rounded-xl px-5 py-3.5 border border-amber-200">
+            <div>
+              <p className="text-sm font-medium text-amber-900">⭐ Feature this Job</p>
+              <p className="text-xs text-amber-700">Featured jobs appear at the top of the careers page with a badge</p>
+            </div>
+            <button type="button" onClick={() => setField('featured', !form.featured)} className={`relative w-12 h-6 rounded-full transition-colors duration-300 focus:outline-none ${form.featured ? 'bg-amber-500' : 'bg-slate-300'}`}>
+              <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform duration-300 ${form.featured ? 'translate-x-6' : 'translate-x-0'}`} />
+            </button>
+          </div>
           <div className="flex items-center justify-between bg-slate-50 rounded-xl px-5 py-3.5 border border-slate-200">
             <div>
               <p className="text-sm font-medium text-slate-800">Publish Listing</p>
@@ -189,7 +198,10 @@ export default function JobsManager({ password }: { password: string }) {
               {jobs.map(job => (
                 <tr key={job.id} className="hover:bg-slate-50/80 transition-colors group">
                   <td className="px-6 py-4">
-                    <p className="font-bold text-slate-900">{job.title}</p>
+                    <p className="font-bold text-slate-900 flex items-center gap-2">
+                      {job.featured && <span className="text-amber-500 text-xs font-bold bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded-md">⭐ Featured</span>}
+                      {job.title}
+                    </p>
                     <p className="text-xs text-slate-500">{job.location}</p>
                   </td>
                   <td className="px-6 py-4 text-sm font-medium text-slate-700">{job.department}</td>

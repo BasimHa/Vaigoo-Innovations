@@ -34,6 +34,7 @@ export interface JobListing {
   duration?: string;       // optional — used mainly for internships
   salaryStipend?: string;  // optional
   status: JobStatus;
+  featured: boolean;       // featured jobs appear at top with a highlight badge
   createdAt: string;       // ISO date string
 }
 
