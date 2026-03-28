@@ -315,17 +315,6 @@ export default function CareersPage() {
              <p className="text-xs text-slate-500 mt-2 ml-1">Please provide a public Google Drive or Website URL to your resume.</p>
            </motion.div>
 
-           <motion.div variants={fadeUp}>
-             <label className="block text-sm font-medium text-slate-700 mb-2">Message / Cover Letter</label>
-             <textarea 
-               name="message" 
-               required 
-               rows={4}
-               className="w-full px-4 py-4 rounded-xl bg-white/80 backdrop-blur-sm border border-slate-200/80 focus:outline-none focus:ring-2 focus:ring-primary-blue/50 focus:border-primary-blue transition-all duration-300 shadow-sm placeholder-slate-400 resize-none" 
-               placeholder="Why are you a good fit for this role?" 
-             />
-           </motion.div>
-
            <motion.div variants={fadeUp} className="pt-4">
              <button type="submit" disabled={result === "Submitting..."} className="w-full bg-gradient-primary text-white font-bold py-4 px-8 rounded-xl shadow-sm hover:shadow-lg hover:shadow-primary-blue/30 hover:-translate-y-1 transition-all duration-300 disabled:opacity-70 disabled:hover:translate-y-0">
                {result}

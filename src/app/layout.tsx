@@ -6,6 +6,7 @@ import { ConditionalShell } from '@/components/layout/ConditionalShell';
 import AIChatbot from '@/components/ui/AI-Chatbot';
 import { GA_TRACKING_ID } from '@/lib/gtag';
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
 const inter = Inter({
@@ -60,6 +61,7 @@ export default function RootLayout({
         </ConditionalShell>
         <AIChatbot />
         <SpeedInsights />
+        <Analytics />
       </body>
     </html>
   );
